@@ -39,6 +39,8 @@ public:
     QLabel *label_4;
     QLabel *label_5;
     QLabel *render_label;
+    QLineEdit *expEdit;
+    QLabel *label_6;
     QMenuBar *menuBar;
     QToolBar *mainToolBar;
     QStatusBar *statusBar;
@@ -60,7 +62,7 @@ public:
         label->setFont(font);
         RenderButton = new QPushButton(centralWidget);
         RenderButton->setObjectName(QStringLiteral("RenderButton"));
-        RenderButton->setGeometry(QRect(880, 100, 75, 23));
+        RenderButton->setGeometry(QRect(880, 170, 75, 23));
         posXEdit = new QLineEdit(centralWidget);
         posXEdit->setObjectName(QStringLiteral("posXEdit"));
         posXEdit->setGeometry(QRect(860, 50, 31, 20));
@@ -91,6 +93,13 @@ public:
         render_label = new QLabel(centralWidget);
         render_label->setObjectName(QStringLiteral("render_label"));
         render_label->setGeometry(QRect(20, 10, 54, 12));
+        expEdit = new QLineEdit(centralWidget);
+        expEdit->setObjectName(QStringLiteral("expEdit"));
+        expEdit->setGeometry(QRect(860, 120, 31, 20));
+        label_6 = new QLabel(centralWidget);
+        label_6->setObjectName(QStringLiteral("label_6"));
+        label_6->setGeometry(QRect(840, 90, 141, 16));
+        label_6->setFont(font);
         RayTracerClass->setCentralWidget(centralWidget);
         menuBar = new QMenuBar(RayTracerClass);
         menuBar->setObjectName(QStringLiteral("menuBar"));
@@ -121,6 +130,8 @@ public:
         label_4->setText(QApplication::translate("RayTracerClass", ",", 0));
         label_5->setText(QApplication::translate("RayTracerClass", ",", 0));
         render_label->setText(QApplication::translate("RayTracerClass", "TextLabel", 0));
+        expEdit->setText(QApplication::translate("RayTracerClass", "5.0", 0));
+        label_6->setText(QApplication::translate("RayTracerClass", "Exponent Factor", 0));
     } // retranslateUi
 
 };

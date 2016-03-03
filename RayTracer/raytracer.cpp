@@ -35,6 +35,8 @@ void RayTracer::renderScene()
 	pCam.backup_pos=pCam.pos;
 	pCam.reset_camera_matrix();
 
+	num[0]=ui.expEdit->text();
+	g_pGlobalSys->m_light.pf=num[0].toFloat();
 
 #ifdef RECORD_TIME
 	DWORD start_time=GetTickCount();
@@ -75,6 +77,24 @@ void RayTracer::render_2_viewport(zyk::UCHAR3*buffer)
 	}
 }
 
+void calPhongShading(zyk::Material& pMaterial,zyk::Light& pLight,const Vec3& cam_pos,const Vec3& shad_pos,const Vec3& pNormal,zyk::UCHAR3& pColor)
+{
+	using zyk::dot_multV4;
+	Vec3 view_dir=(cam_pos-shad_pos).normalized();
+	Vec3 r_vec=-pLight.dir+2*pLight.dir.dot(pNormal)*pNormal;
+	Vec4 color_pt;
+	float val=pNormal.dot(pLight.dir);
+	float spec_val=pow(max(view_dir.dot(r_vec),0.0f),pLight.pf);
+	color_pt=dot_multV4(pMaterial.ka*pMaterial.ra,pLight.c_ambient)
+		+dot_multV4(max(val,0.0f)*pLight.c_diffuse,pMaterial.kd*pMaterial.rd)
+		+dot_multV4(spec_val*pLight.c_specular,pMaterial.ks*pMaterial.rs);
+	
+	zyk::clip_0_to_1(color_pt);
+	pColor.x=color_pt[0]*255;
+	pColor.y=color_pt[1]*255;
+	pColor.z=color_pt[2]*255;
+}
+
 void RayTracer::ray_tracing(zyk::UCHAR3*buffer)
 {
 	const zyk::Camera& v_cam=g_pGlobalSys->m_cam;
@@ -88,6 +108,7 @@ void RayTracer::ray_tracing(zyk::UCHAR3*buffer)
 		int row_ind=i*v_cam.viewport_width;
 		for(int j=0;j<v_cam.viewport_width;j++)
 		{
+			//cast a ray to test if it intersects an object.
 			Vec3 pixel_pos(view_plane(0)+(j+0.5f)*inv_width*v_cam.view_width,
 				view_plane(2)+ratio_height*v_cam.view_height,
 				v_cam.pos(2)-v_cam.near_clip_z);
@@ -97,10 +118,10 @@ void RayTracer::ray_tracing(zyk::UCHAR3*buffer)
 			if(!is_intersect)
 				continue;
 
+			Vec3 inters_pt=v_cam.pos+t*ray_dir;
+			Vec3 v_normal=(inters_pt-sphere.center).normalized();
 			int index=row_ind+j;
-			buffer[index].x=255;
-			buffer[index].y=0;
-			buffer[index].z=0;
+			calPhongShading(g_pGlobalSys->m_materials[0],g_pGlobalSys->m_light,v_cam.pos,inters_pt,v_normal,buffer[index]);
 		}
 	}
 }

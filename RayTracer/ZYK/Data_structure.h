@@ -176,6 +176,7 @@ namespace zyk
 		float spot_inner;   // inner angle for spot light
 		float spot_outer;   // outer angle for spot light
 		float pf;           // power factor/falloff for spot lights
+		float ps;           // power factor for specular lighting
 
 		int   iaux1, iaux2; // auxiliary vars for future expansion
 		float faux1, faux2;
