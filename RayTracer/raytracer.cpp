@@ -6,11 +6,12 @@
 
 RayTracer::RayTracer(QWidget *parent)
 	: QMainWindow(parent),render_buffer(NULL),viewport_image(g_pGlobalSys->viewport_width,g_pGlobalSys->viewport_height,QImage::Format_RGB888),
-	draw_shadow(true)
+	draw_shadow(true),draw_reflect(true)
 {
 	ui.setupUi(this);
 	connect(ui.RenderButton,SIGNAL(clicked()),this,SLOT(renderScene()));
 	connect(ui.drawShadowCheck,SIGNAL(clicked()),this,SLOT(drawShadowSet()));
+	connect(ui.drawReflectCheck,SIGNAL(clicked()),this,SLOT(drawReflectSet()));
 
 	ui.render_label->setFixedSize(g_pGlobalSys->viewport_width,g_pGlobalSys->viewport_height);
 	render_buffer=new zyk::UCHAR3[g_pGlobalSys->pixel_num];
@@ -93,23 +94,25 @@ void RayTracer::render_2_viewport(zyk::UCHAR3*buffer)
 	}
 }
 
-void calPhongShading(const zyk::Material& pMaterial,zyk::Light& pLight,const Vec3& cam_pos,const Vec3& shad_pos,const Vec3& pNormal,zyk::UCHAR3& pColor)
+inline void fillColor(const Vec4&pColor,zyk::UCHAR3& final_color)
+{
+	final_color.x=pColor(0)*255;
+	final_color.y=pColor(1)*255;
+	final_color.z=pColor(2)*255;
+}
+
+void calPhongShading(const zyk::Material& pMaterial,zyk::Light& pLight,const Vec3& cam_pos,const Vec3& shad_pos,const Vec3& pNormal,Vec4& pColor)
 {
 	using zyk::dot_multV4;
 	Vec3 view_dir=(cam_pos-shad_pos).normalized();
 	Vec3 r_vec=-pLight.dir+2*pLight.dir.dot(pNormal)*pNormal;
-	Vec4 color_pt;
 	float diff_val=pNormal.dot(pLight.dir);
 	float spec_val=pow(max(view_dir.dot(r_vec),0.0f),pMaterial.power);
 	//Phong Shading
-	color_pt=dot_multV4(pMaterial.ka*pMaterial.ra,pLight.c_ambient)
+	pColor=dot_multV4(pMaterial.ka*pMaterial.ra,pLight.c_ambient)
 		+dot_multV4(max(diff_val,0.0f)*pLight.c_diffuse,pMaterial.kd*pMaterial.rd)
 		+dot_multV4(spec_val*pLight.c_specular,pMaterial.ks*pMaterial.rs);
-	
-	zyk::clip_0_to_1(color_pt);
-	pColor.x=color_pt[0]*255;
-	pColor.y=color_pt[1]*255;
-	pColor.z=color_pt[2]*255;
+	zyk::clip_0_to_1(pColor);
 }
 
 #define DRAW_SHADOW
@@ -156,14 +159,16 @@ void RayTracer::ray_tracing(zyk::UCHAR3*buffer)
 				}
 			}
 
+
 			bool in_shadow=false;
+			//shadow
 			if(draw_shadow)
 			{
 				for(int obj_id=0;obj_id<(int)m_objects.size();obj_id++)
 				{
 					if(near_obj_id==obj_id)
 						continue;
-					bool is_intersect=m_objects[obj_id]->intersect(v_inter_pt,g_pGlobalSys->m_light.dir,t);
+					bool is_intersect=m_objects[obj_id]->intersect(v_inter_pt+g_pGlobalSys->m_light.dir*0.01f,g_pGlobalSys->m_light.dir,t);
 					if(is_intersect)
 					{
 						in_shadow=true;
@@ -172,17 +177,46 @@ void RayTracer::ray_tracing(zyk::UCHAR3*buffer)
 				}
 			}
 
+			//reflection
+			int near_reflect_id=-1;
+			Vec4 ref_color(0,0,0,1);
+			if(!in_shadow&&draw_reflect)
+			{
+				Vec3 reflect_dir=(ray_dir-2*ray_dir.dot(v_normal)*v_normal).normalized();
+				Vec3 ref_nor,ref_pt;
+				for(int obj_id=0;obj_id<(int)m_objects.size();obj_id++)
+				{
+					if(near_obj_id==obj_id)
+						continue;
+					bool is_intersect=m_objects[obj_id]->intersect(v_inter_pt+reflect_dir*0.01f,reflect_dir,t,tmp_nor,tmp_inter_pt);
+					if(!is_intersect)
+						continue;
+					if(near_reflect_id==-1||t<min_t)
+					{
+						min_t=t;
+						near_reflect_id=obj_id;
+						ref_nor=tmp_nor;
+						ref_pt=tmp_inter_pt;
+					}
+				}
+				if(near_reflect_id!=-1)
+					calPhongShading(*m_objects[near_reflect_id]->getMat(),g_pGlobalSys->m_light,v_cam.pos,ref_pt,ref_nor,ref_color);
+			}
+
 			if(near_obj_id==-1)
 				continue;	
 			int index=row_ind+j;
 			if(!in_shadow)
-				calPhongShading(*m_objects[near_obj_id]->getMat(),g_pGlobalSys->m_light,v_cam.pos,v_inter_pt,v_normal,buffer[index]);
-			else
 			{
-				buffer[index].x=0;
-				buffer[index].y=0;
-				buffer[index].z=0;
+				Vec4 shade_color;
+				calPhongShading(*m_objects[near_obj_id]->getMat(),g_pGlobalSys->m_light,v_cam.pos,v_inter_pt,v_normal,shade_color);
+				if(near_reflect_id!=-1)
+					shade_color=shade_color*m_objects[near_obj_id]->getMat()->km+((1-m_objects[near_obj_id]->getMat()->km)*ref_color);
+				zyk::clip_0_to_1(shade_color);
+				fillColor(shade_color,buffer[index]);
 			}
+			else
+				fillColor(Vec4::Zero(),buffer[index]);
 		}
 	}
 }
@@ -190,6 +224,11 @@ void RayTracer::ray_tracing(zyk::UCHAR3*buffer)
 void RayTracer::drawShadowSet()
 {
 	draw_shadow=ui.drawShadowCheck->isChecked();
+}
+
+void RayTracer::drawReflectSet()
+{
+	draw_reflect=ui.drawReflectCheck->isChecked();
 }
 
 //here we write some code to test effects of rendering

@@ -10,6 +10,11 @@
     <height>703</height>
    </rect>
   </property>
+  <property name="font">
+   <font>
+    <pointsize>10</pointsize>
+   </font>
+  </property>
   <property name="windowTitle">
    <string>RayTracer</string>
   </property>
@@ -18,14 +23,14 @@
     <property name="geometry">
      <rect>
       <x>840</x>
-      <y>10</y>
+      <y>20</y>
       <width>91</width>
       <height>16</height>
      </rect>
     </property>
     <property name="font">
      <font>
-      <pointsize>12</pointsize>
+      <pointsize>10</pointsize>
       <weight>75</weight>
       <bold>true</bold>
      </font>
@@ -38,9 +43,9 @@
     <property name="geometry">
      <rect>
       <x>880</x>
-      <y>130</y>
-      <width>75</width>
-      <height>23</height>
+      <y>160</y>
+      <width>81</width>
+      <height>31</height>
      </rect>
     </property>
     <property name="text">
@@ -182,13 +187,36 @@
     </property>
     <property name="font">
      <font>
-      <pointsize>12</pointsize>
+      <pointsize>10</pointsize>
       <weight>75</weight>
       <bold>true</bold>
      </font>
     </property>
     <property name="text">
      <string>Draw Shadow</string>
+    </property>
+    <property name="checked">
+     <bool>true</bool>
+    </property>
+   </widget>
+   <widget class="QCheckBox" name="drawReflectCheck">
+    <property name="geometry">
+     <rect>
+      <x>850</x>
+      <y>120</y>
+      <width>161</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>10</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="text">
+     <string>Draw Reflection</string>
     </property>
     <property name="checked">
      <bool>true</bool>
@@ -201,7 +229,7 @@
      <x>0</x>
      <y>0</y>
      <width>1026</width>
-     <height>23</height>
+     <height>25</height>
     </rect>
    </property>
   </widget>

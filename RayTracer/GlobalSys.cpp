@@ -33,11 +33,12 @@ void CGlobalSys::init_Material()
 	m_materials[0].color.z=200;
 
 	m_materials[0].ks=m_materials[0].kd=m_materials[0].ka=1.0f;
-	m_materials[0].power=12.0f;
+	m_materials[0].km=0.7f;
+	m_materials[0].power=25.0f;
 	m_materials[0].ra=Vec4(0.12108f,0.13282f,0.15078f,1.0f);
 	m_materials[0].rd=Vec4(0.48432f,0.53128f,0.60312f,1.0f);
 	m_materials[0].rs=Vec4(1.0f,1.0f,1.0f,1.0f);
-
+	
 	m_materials[1].name="yellow";
 	m_materials[1].attr=2; //flat
 	m_materials[1].color.x=245;
@@ -45,7 +46,8 @@ void CGlobalSys::init_Material()
 	m_materials[1].color.z=134;
 
 	m_materials[1].ks=m_materials[1].kd=m_materials[1].ka=1.0f;
-	m_materials[1].power=12.0f;
+	m_materials[1].km=0.7f;
+	m_materials[1].power=25.0f;
 	m_materials[1].ra=Vec4(m_materials[1].color.x*0.3f*inv_255,m_materials[1].color.y*0.3f*inv_255,m_materials[1].color.z*0.3f*inv_255,1.0f);
 	m_materials[1].rd=Vec4(m_materials[1].color.x*0.7f*inv_255,m_materials[1].color.y*0.7f*inv_255,m_materials[1].color.z*0.7f*inv_255,1.0f);
 	m_materials[1].rs=Vec4(1.0f,1.0f,1.0f,1.0f);
@@ -57,7 +59,8 @@ void CGlobalSys::init_Material()
 	m_materials[2].color.z=124;
 
 	m_materials[2].ks=m_materials[2].kd=m_materials[2].ka=1.0f;
-	m_materials[2].power=12.0f;
+	m_materials[2].km=0.7f;
+	m_materials[2].power=25.0f;
 	m_materials[2].ra=Vec4(m_materials[2].color.x*0.3f*inv_255,m_materials[2].color.y*0.3f*inv_255,m_materials[2].color.z*0.3f*inv_255,1.0f);
 	m_materials[2].rd=Vec4(m_materials[2].color.x*0.7f*inv_255,m_materials[2].color.y*0.7f*inv_255,m_materials[2].color.z*0.7f*inv_255,1.0f);
 	m_materials[2].rs=Vec4(1.0f,1.0f,1.0f,1.0f);

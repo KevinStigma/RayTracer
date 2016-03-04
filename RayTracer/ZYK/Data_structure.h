@@ -127,11 +127,12 @@ namespace zyk
 		// and other special flags...
 
 		UCHAR3 color;            // color of material
-		float ka, kd, ks, power; // ambient, diffuse, specular, 
+		float ka, kd, ks,km,power; // ambient, diffuse, specular, 
 		// coefficients, note they are 
 		// separate and scalars since many 
 		// modelers use this format
 		// along with specular power
+
 
 		Vec4 ra, rd, rs;       // the reflectivities/colors pre-
 		// multiplied, to more match our 

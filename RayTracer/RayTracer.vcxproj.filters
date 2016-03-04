@@ -68,6 +68,9 @@
     <ClCompile Include="ZYK\Objects.cpp">
       <Filter>ZYK</Filter>
     </ClCompile>
+    <ClCompile Include="ZYK\glm.cpp">
+      <Filter>ZYK</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="raytracer.h">
@@ -100,6 +103,9 @@
       <Filter>ZYK</Filter>
     </ClInclude>
     <ClInclude Include="ZYK\Objects.h">
+      <Filter>ZYK</Filter>
+    </ClInclude>
+    <ClInclude Include="ZYK\glm.h">
       <Filter>ZYK</Filter>
     </ClInclude>
   </ItemGroup>

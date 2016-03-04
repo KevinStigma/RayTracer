@@ -23,6 +23,7 @@ public:
 public slots:
 	void renderScene(); 
 	void drawShadowSet();
+	void drawReflectSet();
 
 protected:
 	void keyPressEvent(QKeyEvent *e);
@@ -37,7 +38,7 @@ private:
 	zyk::UCHAR3* render_buffer;  
 	QImage viewport_image;
 	std::vector<zyk::Object*> m_objects;
-	bool draw_shadow;
+	bool draw_shadow,draw_reflect;
 };
 
 #endif // RAYTRACER_H

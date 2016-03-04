@@ -90,6 +90,7 @@
     <ClCompile Include="raytracer.cpp" />
     <ClCompile Include="ZYK\CPARSERV1.cpp" />
     <ClCompile Include="ZYK\Data_structure.cpp" />
+    <ClCompile Include="ZYK\glm.cpp" />
     <ClCompile Include="ZYK\Image.cpp" />
     <ClCompile Include="ZYK\Objects.cpp" />
   </ItemGroup>
@@ -123,6 +124,7 @@
     <ClInclude Include="GlobalSys.h" />
     <ClInclude Include="ZYK\CPARSERV1.h" />
     <ClInclude Include="ZYK\Data_structure.h" />
+    <ClInclude Include="ZYK\glm.h" />
     <ClInclude Include="ZYK\Image.h" />
     <ClInclude Include="ZYK\Objects.h" />
     <ClInclude Include="ZYK\stb_image.h" />
