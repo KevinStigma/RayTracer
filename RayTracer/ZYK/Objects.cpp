@@ -2,7 +2,16 @@
 
 namespace zyk
 {
-	bool Sphere::intersect(const Vec3& origin,const Vec3& dir,float& t,Vec3& p_normal,Vec3& inters_pt)
+	bool Sphere::intersect(const Vec3& origin,const Vec3& dir,float& t,Vec3& p_normal,Vec3& inters_pt)const
+	{
+		if(!intersect(origin,dir,t))
+			return false;
+		inters_pt=origin+t*dir;
+		p_normal=(inters_pt-center).normalized();
+		return true;
+	}
+
+	bool Sphere::intersect(const Vec3& origin,const Vec3& dir,float& t)const
 	{
 		t=0;
 		float tmp_val=dir.dot(origin-center);
@@ -32,8 +41,6 @@ namespace zyk
 			else
 				t=std::min(t1,t2);
 		}
-		inters_pt=origin+t*dir;
-		p_normal=(inters_pt-center).normalized();
 		return true;
 	}
 };

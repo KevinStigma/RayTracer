@@ -13,6 +13,7 @@
 #include <QtWidgets/QAction>
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QButtonGroup>
+#include <QtWidgets/QCheckBox>
 #include <QtWidgets/QHeaderView>
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QLineEdit>
@@ -39,6 +40,7 @@ public:
     QLabel *label_4;
     QLabel *label_5;
     QLabel *render_label;
+    QCheckBox *drawShadowCheck;
     QMenuBar *menuBar;
     QToolBar *mainToolBar;
     QStatusBar *statusBar;
@@ -60,7 +62,7 @@ public:
         label->setFont(font);
         RenderButton = new QPushButton(centralWidget);
         RenderButton->setObjectName(QStringLiteral("RenderButton"));
-        RenderButton->setGeometry(QRect(880, 90, 75, 23));
+        RenderButton->setGeometry(QRect(880, 130, 75, 23));
         posXEdit = new QLineEdit(centralWidget);
         posXEdit->setObjectName(QStringLiteral("posXEdit"));
         posXEdit->setGeometry(QRect(860, 50, 31, 20));
@@ -91,6 +93,11 @@ public:
         render_label = new QLabel(centralWidget);
         render_label->setObjectName(QStringLiteral("render_label"));
         render_label->setGeometry(QRect(20, 10, 54, 12));
+        drawShadowCheck = new QCheckBox(centralWidget);
+        drawShadowCheck->setObjectName(QStringLiteral("drawShadowCheck"));
+        drawShadowCheck->setGeometry(QRect(850, 90, 131, 16));
+        drawShadowCheck->setFont(font);
+        drawShadowCheck->setChecked(true);
         RayTracerClass->setCentralWidget(centralWidget);
         menuBar = new QMenuBar(RayTracerClass);
         menuBar->setObjectName(QStringLiteral("menuBar"));
@@ -121,6 +128,7 @@ public:
         label_4->setText(QApplication::translate("RayTracerClass", ",", 0));
         label_5->setText(QApplication::translate("RayTracerClass", ",", 0));
         render_label->setText(QApplication::translate("RayTracerClass", "TextLabel", 0));
+        drawShadowCheck->setText(QApplication::translate("RayTracerClass", "Draw Shadow", 0));
     } // retranslateUi
 
 };

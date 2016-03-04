@@ -2,6 +2,7 @@
 #define RAYTRACER_H
 
 #include <QtWidgets/QMainWindow>
+#include <QKeyEvent>
 #include "ui_raytracer.h"
 #include "zyk/Data_structure.h"
 
@@ -21,18 +22,22 @@ public:
 
 public slots:
 	void renderScene(); 
+	void drawShadowSet();
 
 protected:
+	void keyPressEvent(QKeyEvent *e);
 	void init_render_buffer(zyk::UCHAR3*buffer);
 	void init_objects();
 	void render_2_viewport(zyk::UCHAR3*buffer);
 	void ray_tracing(zyk::UCHAR3*buffer);
+	void renderTest();
 
 private:
 	Ui::RayTracerClass ui;
 	zyk::UCHAR3* render_buffer;  
 	QImage viewport_image;
 	std::vector<zyk::Object*> m_objects;
+	bool draw_shadow;
 };
 
 #endif // RAYTRACER_H
