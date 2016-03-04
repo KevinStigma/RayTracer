@@ -38,7 +38,7 @@
     <property name="geometry">
      <rect>
       <x>880</x>
-      <y>170</y>
+      <y>90</y>
       <width>75</width>
       <height>23</height>
      </rect>
@@ -169,39 +169,6 @@
     </property>
     <property name="text">
      <string>TextLabel</string>
-    </property>
-   </widget>
-   <widget class="QLineEdit" name="expEdit">
-    <property name="geometry">
-     <rect>
-      <x>860</x>
-      <y>120</y>
-      <width>31</width>
-      <height>20</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>10</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_6">
-    <property name="geometry">
-     <rect>
-      <x>840</x>
-      <y>90</y>
-      <width>141</width>
-      <height>16</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <pointsize>12</pointsize>
-      <weight>75</weight>
-      <bold>true</bold>
-     </font>
-    </property>
-    <property name="text">
-     <string>Exponent Factor</string>
     </property>
    </widget>
   </widget>

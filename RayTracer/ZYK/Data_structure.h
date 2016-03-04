@@ -67,18 +67,11 @@ namespace zyk
 		};
 	};
 
+	
 	struct Plane3D
 	{
 		Vec3 p0; // point on the plane
 		Vec3 n; // normal to the plane (not necessarily a unit vector)
-	};
-
-	struct Sphere
-	{
-		Sphere(Vec3 cent=Vec3(0,0,0),float r=0):center(cent),radius(r){}
-		bool intersect(const Vec3& origin,const Vec3& dir,float& t);
-		Vec3 center;
-		float radius;
 	};
 
 	union TexCoord
@@ -176,7 +169,6 @@ namespace zyk
 		float spot_inner;   // inner angle for spot light
 		float spot_outer;   // outer angle for spot light
 		float pf;           // power factor/falloff for spot lights
-		float ps;           // power factor for specular lighting
 
 		int   iaux1, iaux2; // auxiliary vars for future expansion
 		float faux1, faux2;

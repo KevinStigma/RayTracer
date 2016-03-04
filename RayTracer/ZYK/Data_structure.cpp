@@ -1273,37 +1273,4 @@ namespace zyk
 		}
 		out.close();
 	}
-
-	bool Sphere::intersect(const Vec3& origin,const Vec3& dir,float& t)
-	{
-		t=0;
-		float tmp_val=dir.dot(origin-center);
-		Vec3 tmp_vec=origin-center;
-		float val=tmp_val*tmp_val-dir.dot(dir)*(tmp_vec.dot(tmp_vec)-radius*radius);
-
-		float inv_dot=1/dir.dot(dir);
-		if(val<0)
-			return false;
-		else if(FCMP(val,0.0))
-		{
-			t=-tmp_val*inv_dot;
-			if(t<0)
-				return false;
-		}
-		else
-		{
-			val=sqrt(val);
-			float t1=(-tmp_val+val)*inv_dot;
-			float t2=(-tmp_val-val)*inv_dot;
-			if(t1<0&&t2<0)
-				return false;
-			else if(t1<0)
-				t=t2;
-			else if(t2<0)
-				t=t1;
-			else
-				t=std::min(t1,t2);
-		}
-		return true;
-	}
 };

@@ -1,10 +1,11 @@
 #include "raytracer.h"
 #include "GlobalSys.h"
+#include "zyk/Objects.h"
 #include <windows.h>
 #include <WinBase.h>
 
 RayTracer::RayTracer(QWidget *parent)
-	: QMainWindow(parent),render_buffer(NULL),viewport_image(g_pGlobalSys->viewport_width,g_pGlobalSys->viewport_height,QImage::Format_RGB888),sphere(Vec3(0,0,0),2)
+	: QMainWindow(parent),render_buffer(NULL),viewport_image(g_pGlobalSys->viewport_width,g_pGlobalSys->viewport_height,QImage::Format_RGB888)
 {
 	ui.setupUi(this);
 	connect(ui.RenderButton,SIGNAL(clicked()),this,SLOT(renderScene()));
@@ -12,6 +13,7 @@ RayTracer::RayTracer(QWidget *parent)
 	ui.render_label->setFixedSize(g_pGlobalSys->viewport_width,g_pGlobalSys->viewport_height);
 	render_buffer=new zyk::UCHAR3[g_pGlobalSys->pixel_num];
 	init_render_buffer(render_buffer);
+	init_objects();
 	renderScene();
 }
 
@@ -19,6 +21,10 @@ RayTracer::~RayTracer()
 {
 	 SAFE_DELETE(g_pGlobalSys);
 	 SAFE_DELETE_ARRAY(render_buffer);
+	 for(int i=0;i<(int)m_objects.size();i++)
+	 {
+		 SAFE_DELETE(m_objects[i]);
+	 }
 }
 
 #define RECORD_TIME
@@ -34,9 +40,6 @@ void RayTracer::renderScene()
 		pCam.pos[i]=num[i].toFloat();
 	pCam.backup_pos=pCam.pos;
 	pCam.reset_camera_matrix();
-
-	num[0]=ui.expEdit->text();
-	g_pGlobalSys->m_light.pf=num[0].toFloat();
 
 #ifdef RECORD_TIME
 	DWORD start_time=GetTickCount();
@@ -62,6 +65,14 @@ void RayTracer::init_render_buffer(zyk::UCHAR3*buffer)
 		buffer[i].m[2]=0;
 	}
 }
+
+void RayTracer::init_objects()
+{
+	m_objects.resize(1);
+	m_objects[0]=new zyk::Sphere(Vec3(0,0,0),2);
+	m_objects[0]->setMat(&g_pGlobalSys->m_materials[1]);
+}
+
 void RayTracer::render_2_viewport(zyk::UCHAR3*buffer)
 {
 	for(int i=0;i<g_pGlobalSys->viewport_height;i++)
@@ -77,15 +88,15 @@ void RayTracer::render_2_viewport(zyk::UCHAR3*buffer)
 	}
 }
 
-void calPhongShading(zyk::Material& pMaterial,zyk::Light& pLight,const Vec3& cam_pos,const Vec3& shad_pos,const Vec3& pNormal,zyk::UCHAR3& pColor)
+void calShading(const zyk::Material& pMaterial,zyk::Light& pLight,const Vec3& cam_pos,const Vec3& shad_pos,const Vec3& pNormal,zyk::UCHAR3& pColor)
 {
 	using zyk::dot_multV4;
 	Vec3 view_dir=(cam_pos-shad_pos).normalized();
 	Vec3 r_vec=-pLight.dir+2*pLight.dir.dot(pNormal)*pNormal;
 	Vec4 color_pt;
 	float diff_val=pNormal.dot(pLight.dir);
-	float spec_val=pow(max(view_dir.dot(r_vec),0.0f),pLight.pf);
-	//float spec_val=0;
+	float spec_val=pow(max(view_dir.dot(r_vec),0.0f),pMaterial.power);
+	//Phong Shading
 	color_pt=dot_multV4(pMaterial.ka*pMaterial.ra,pLight.c_ambient)
 		+dot_multV4(max(diff_val,0.0f)*pLight.c_diffuse,pMaterial.kd*pMaterial.rd)
 		+dot_multV4(spec_val*pLight.c_specular,pMaterial.ks*pMaterial.rs);
@@ -98,10 +109,18 @@ void calPhongShading(zyk::Material& pMaterial,zyk::Light& pLight,const Vec3& cam
 
 void RayTracer::ray_tracing(zyk::UCHAR3*buffer)
 {
+	//check if the objects are valid
+	if(!m_objects.size())
+		return;
+	for(int i=0;i<(int)m_objects.size();i++)
+		assert(m_objects[i]&&m_objects[i]->getMat());
+
 	const zyk::Camera& v_cam=g_pGlobalSys->m_cam;
 	const Vec4 &view_plane=v_cam.view_plane;
 	float inv_width=1/v_cam.viewport_width;
 	float inv_height=1/v_cam.viewport_height;
+	Vec3 v_normal(0,0,0);
+	Vec3 v_inter_pt(0,0,0);
 
 	for(int i=0;i<v_cam.viewport_height;i++)
 	{
@@ -115,14 +134,16 @@ void RayTracer::ray_tracing(zyk::UCHAR3*buffer)
 				v_cam.pos(2)-v_cam.near_clip_z);
 			Vec3 ray_dir=(pixel_pos-v_cam.pos).normalized();
 			float t;
-			bool is_intersect=sphere.intersect(v_cam.pos,ray_dir,t);
-			if(!is_intersect)
-				continue;
+			
+			for(int obj_id=0;obj_id<(int)m_objects.size();obj_id++)
+			{
+				bool is_intersect=m_objects[obj_id]->intersect(v_cam.pos,ray_dir,t,v_normal,v_inter_pt);
+				if(!is_intersect)
+					continue;
 
-			Vec3 inters_pt=v_cam.pos+t*ray_dir;
-			Vec3 v_normal=(inters_pt-sphere.center).normalized();
-			int index=row_ind+j;
-			calPhongShading(g_pGlobalSys->m_materials[0],g_pGlobalSys->m_light,v_cam.pos,inters_pt,v_normal,buffer[index]);
+				int index=row_ind+j;
+				calShading(*m_objects[obj_id]->getMat(),g_pGlobalSys->m_light,v_cam.pos,v_inter_pt,v_normal,buffer[index]);
+			}
 		}
 	}
 }

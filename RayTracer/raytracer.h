@@ -5,6 +5,12 @@
 #include "ui_raytracer.h"
 #include "zyk/Data_structure.h"
 
+//class's forward declaration in a namespace
+namespace zyk
+{
+	class Object;
+};
+
 class RayTracer : public QMainWindow
 {
 	Q_OBJECT
@@ -18,6 +24,7 @@ public slots:
 
 protected:
 	void init_render_buffer(zyk::UCHAR3*buffer);
+	void init_objects();
 	void render_2_viewport(zyk::UCHAR3*buffer);
 	void ray_tracing(zyk::UCHAR3*buffer);
 
@@ -25,7 +32,7 @@ private:
 	Ui::RayTracerClass ui;
 	zyk::UCHAR3* render_buffer;  
 	QImage viewport_image;
-	zyk::Sphere sphere;
+	std::vector<zyk::Object*> m_objects;
 };
 
 #endif // RAYTRACER_H
