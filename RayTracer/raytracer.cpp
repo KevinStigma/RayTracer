@@ -83,10 +83,11 @@ void calPhongShading(zyk::Material& pMaterial,zyk::Light& pLight,const Vec3& cam
 	Vec3 view_dir=(cam_pos-shad_pos).normalized();
 	Vec3 r_vec=-pLight.dir+2*pLight.dir.dot(pNormal)*pNormal;
 	Vec4 color_pt;
-	float val=pNormal.dot(pLight.dir);
+	float diff_val=pNormal.dot(pLight.dir);
 	float spec_val=pow(max(view_dir.dot(r_vec),0.0f),pLight.pf);
+	//float spec_val=0;
 	color_pt=dot_multV4(pMaterial.ka*pMaterial.ra,pLight.c_ambient)
-		+dot_multV4(max(val,0.0f)*pLight.c_diffuse,pMaterial.kd*pMaterial.rd)
+		+dot_multV4(max(diff_val,0.0f)*pLight.c_diffuse,pMaterial.kd*pMaterial.rd)
 		+dot_multV4(spec_val*pLight.c_specular,pMaterial.ks*pMaterial.rs);
 	
 	zyk::clip_0_to_1(color_pt);
@@ -110,7 +111,7 @@ void RayTracer::ray_tracing(zyk::UCHAR3*buffer)
 		{
 			//cast a ray to test if it intersects an object.
 			Vec3 pixel_pos(view_plane(0)+(j+0.5f)*inv_width*v_cam.view_width,
-				view_plane(2)+ratio_height*v_cam.view_height,
+				view_plane(2)-ratio_height*v_cam.view_height,
 				v_cam.pos(2)-v_cam.near_clip_z);
 			Vec3 ray_dir=(pixel_pos-v_cam.pos).normalized();
 			float t;

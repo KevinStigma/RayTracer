@@ -130,7 +130,7 @@ public:
         label_4->setText(QApplication::translate("RayTracerClass", ",", 0));
         label_5->setText(QApplication::translate("RayTracerClass", ",", 0));
         render_label->setText(QApplication::translate("RayTracerClass", "TextLabel", 0));
-        expEdit->setText(QApplication::translate("RayTracerClass", "5.0", 0));
+        expEdit->setText(QApplication::translate("RayTracerClass", "10", 0));
         label_6->setText(QApplication::translate("RayTracerClass", "Exponent Factor", 0));
     } // retranslateUi
 

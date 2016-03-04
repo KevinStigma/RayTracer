@@ -1,9 +1,9 @@
-﻿生成启动时间为 2016/3/3 20:56:20。
+﻿生成启动时间为 2016/3/4 10:07:26。
      1>项目“G:\My Documents\Visual Studio 2010\Projects\RayTracer\RayTracer\RayTracer.vcxproj”在节点 2 上(build 个目标)。
      1>InitializeBuildStatus:
          正在创建“Release\RayTracer.unsuccessfulbuild”，因为已指定“AlwaysCreate”。
        CustomBuild:
-         Uic'ing raytracer.ui...
+         所有输出均为最新。
        ClCompile:
          所有输出均为最新。
          G:\VS2010\VC\bin\CL.exe /c /I.\GeneratedFiles /I. /IG:\QT5.20\5.2.0\msvc2010_opengl\include /I.\GeneratedFiles\Release /IG:\QT5.20\5.2.0\msvc2010_opengl\include\QtCore /IG:\QT5.20\5.2.0\msvc2010_opengl\include\QtGui /IG:\QT5.20\5.2.0\msvc2010_opengl\include\QtOpenGL /IG:\QT5.20\5.2.0\msvc2010_opengl\include\QtWidgets /nologo /W1 /WX- /O2 /Oy- /D UNICODE /D WIN32 /D WIN64 /D QT_DLL /D QT_NO_DEBUG /D NDEBUG /D QT_CORE_LIB /D QT_GUI_LIB /D QT_OPENGL_LIB /D QT_WIDGETS_LIB /Gm- /EHsc /MD /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Release\\" /Fd"Release\vc100.pdb" /Gd /TP /analyze- /errorReport:prompt GeneratedFiles\Release\moc_raytracer.cpp GlobalSys.cpp ZYK\Data_structure.cpp main.cpp raytracer.cpp
@@ -32,4 +32,4 @@
 
 生成成功。
 
-已用时间 00:00:10.10
+已用时间 00:00:10.24

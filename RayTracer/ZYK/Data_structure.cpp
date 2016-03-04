@@ -24,7 +24,7 @@ namespace zyk
 
 		view_height=near_clip_z*tan(fov*DEG_TO_RAD*0.5f)*2.0f;
 		view_width=view_height*aspect_ratio;
-		view_plane=Vec4(-view_width*0.5f,view_width*0.5f,-view_height*0.5f,view_height*0.5f);
+		view_plane=Vec4(-view_width*0.5f,view_width*0.5f,view_height*0.5f,-view_height*0.5f);
 		
 		reset_camera_matrix();
 		reset_perspective_proj_matrix();

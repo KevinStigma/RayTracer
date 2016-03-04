@@ -21,7 +21,7 @@ void CGlobalSys::init_Light()
 	m_light.c_specular=Vec4::Ones();
 	m_light.pos=Vec3::Zero();
 	m_light.dir=Vec3(0,1,1).normalized();
-	m_light.pf=5.0f;
+	m_light.pf=10.0f;
 }
 
 void CGlobalSys::init_Material()
