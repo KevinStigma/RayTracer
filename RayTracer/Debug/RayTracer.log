@@ -1,12 +1,13 @@
-﻿生成启动时间为 2016/3/4 21:35:59。
+﻿生成启动时间为 2016/3/5 20:56:25。
      1>项目“G:\My Documents\Visual Studio 2010\Projects\RayTracer\RayTracer\RayTracer.vcxproj”在节点 2 上(build 个目标)。
      1>InitializeBuildStatus:
-         正在创建“Debug\RayTracer.unsuccessfulbuild”，因为已指定“AlwaysCreate”。
+         正在对“Debug\RayTracer.unsuccessfulbuild”执行 Touch 任务。
        CustomBuild:
          所有输出均为最新。
        ClCompile:
-         G:\VS2010\VC\bin\CL.exe /c /I.\GeneratedFiles /I. /IG:\QT5.20\5.2.0\msvc2010_opengl\include /I.\GeneratedFiles\Debug /IG:\QT5.20\5.2.0\msvc2010_opengl\include\QtCore /IG:\QT5.20\5.2.0\msvc2010_opengl\include\QtGui /IG:\QT5.20\5.2.0\msvc2010_opengl\include\QtOpenGL /IG:\QT5.20\5.2.0\msvc2010_opengl\include\QtWidgets /Zi /nologo /W1 /WX- /Od /Oy- /D UNICODE /D WIN32 /D WIN64 /D QT_DLL /D QT_CORE_LIB /D QT_GUI_LIB /D QT_OPENGL_LIB /D QT_WIDGETS_LIB /Gm- /EHsc /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc100.pdb" /Gd /TP /analyze- /errorReport:prompt ZYK\Objects.cpp raytracer.cpp
-         Objects.cpp
+         G:\VS2010\VC\bin\CL.exe /c /I.\GeneratedFiles /I. /IG:\QT5.20\5.2.0\msvc2010_opengl\include /I.\GeneratedFiles\Debug /IG:\QT5.20\5.2.0\msvc2010_opengl\include\QtCore /IG:\QT5.20\5.2.0\msvc2010_opengl\include\QtGui /IG:\QT5.20\5.2.0\msvc2010_opengl\include\QtOpenGL /IG:\QT5.20\5.2.0\msvc2010_opengl\include\QtWidgets /Zi /nologo /W1 /WX- /Od /Oy- /D UNICODE /D WIN32 /D WIN64 /D QT_DLL /D QT_CORE_LIB /D QT_GUI_LIB /D QT_OPENGL_LIB /D QT_WIDGETS_LIB /Gm- /EHsc /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc100.pdb" /Gd /TP /analyze- /errorReport:prompt GeneratedFiles\Debug\moc_raytracer.cpp main.cpp raytracer.cpp
+         moc_raytracer.cpp
+         main.cpp
          raytracer.cpp
          正在生成代码...
          所有输出均为最新。
@@ -20,6 +21,8 @@
          Debug\Data_structure.obj
          Debug\glm.obj
          Debug\Image.obj
+         Debug\mathematics.obj
+         Debug\mesh_loader.obj
          Debug\Objects.obj
          LINK : 没有找到 G:\My Documents\Visual Studio 2010\Projects\RayTracer\Win32\Debug\\RayTracer.exe 或上一个增量链接没有生成它；正在执行完全链接
          RayTracer.vcxproj -> G:\My Documents\Visual Studio 2010\Projects\RayTracer\Win32\Debug\RayTracer.exe
@@ -32,4 +35,4 @@
 
 生成成功。
 
-已用时间 00:00:04.49
+已用时间 00:00:05.65

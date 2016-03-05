@@ -1,4 +1,5 @@
 #include "Objects.h"
+#include "mathematics.h"
 
 namespace zyk
 {
@@ -49,16 +50,49 @@ namespace zyk
 
 	}
 
-	bool TriMesh::intersect(const Vec3& origin,const Vec3& dir,float& t,Vec3& normal,Vec3& intersect_pt)const 
+	bool TriMesh::intersect(const Vec3& origin,const Vec3& ray_dir,float& t,Vec3& normal,Vec3& intersect_pt)const 
 	{
-		return true;
-	}
-	bool TriMesh::intersect(const Vec3& origin,const Vec3& dir,float& t)const
-	{
-		return true;
+		Vec3 vVert[3],vNormal[3];
+		Vec2 coord_para;
+		t=0;
+		for(int i=0;i<mModel->numtriangles;i++)
+		{
+			for(int j=0;j<3;j++)
+			{
+				int index=mModel->triangles[i].vindices[j];
+				vVert[j]=Vec3(mModel->vertices[index*3],mModel->vertices[index*3+1],mModel->vertices[index*3+2]);
+				vNormal[j]=Vec3(mModel->normals[index*3],mModel->normals[index*3+1],mModel->normals[index*3+2]);
+			}
+			if(tri_intersect_test(origin,ray_dir,vVert,t,coord_para)&&t>0)
+			{
+				intersect_pt=origin+t*ray_dir;
+				//normal interpolation
+				normal=(1-coord_para(0)-coord_para(1))*vNormal[0]+coord_para(0)*vNormal[1]+coord_para(1)*vNormal[2];
+				return true;
+			}
+		}
+		return false;
 	}
 
-	void TriMesh::importMesh(const std::string&filename)
+	bool TriMesh::intersect(const Vec3& origin,const Vec3& ray_dir,float& t)const
+	{
+		Vec3 vVert[3];
+		Vec2 coord_para;
+		t=0;
+		for(int i=0;i<mModel->numtriangles;i++)
+		{
+			for(int j=0;j<3;j++)
+			{
+				int index=mModel->triangles[i].vindices[j];
+				vVert[j]=Vec3(mModel->vertices[index*3],mModel->vertices[index*3+1],mModel->vertices[index*3+2]);
+			}
+			if(tri_intersect_test(origin,ray_dir,vVert,t,coord_para)&&t>0)
+				return true;
+		}
+		return false;
+	}
+
+	bool TriMesh::importMesh(const std::string&filename)
 	{
 		if (mModel)
 		{
@@ -69,12 +103,14 @@ namespace zyk
 		if(!mModel)
 		{
 			std::cout<<"Can't read the mesh"<<std::endl;
-			return;
+			return false;
 		}
 		m_center=Vec3(0,0,0);
 		for(int i=1;i<=mModel->numvertices;i++)
 			m_center+=Vec3(mModel->vertices[i*3],mModel->vertices[i*3+1],mModel->vertices[i*3+2]);
 		m_center/=mModel->numvertices;
+		calVertNormal(1);
+		return true;
 	}
 
 	void TriMesh::calVertNormal(int status)
@@ -129,6 +165,29 @@ namespace zyk
 		for(int i=1;i<=mModel->numvertices;i++)
 			for(int j=0;j<3;j++)
 				mModel->vertices[i*3+j]= (mModel->vertices[i*3+j]-m_center(j))*scale(j)+m_center(j);
+	}
+
+	Vec3 TriMesh::getCenter()
+	{
+		if(!mModel)
+		{
+			std::cout<<"You don't generate model now!"<<std::endl;
+			return Vec3(0,0,0);
+		}
+		return m_center;
+	}
+
+	void TriMesh::translate(const Vec3& trans)
+	{
+		if(!mModel)
+			return;
+		for(int i=1;i<=mModel->numvertices;i++)
+		{
+			int ind=i*3;
+			mModel->vertices[ind]+=trans[0];
+			mModel->vertices[ind+1]+=trans[1];
+			mModel->vertices[ind+2]+=trans[2];
+		}
 	}
 
 	TriMesh::~TriMesh()

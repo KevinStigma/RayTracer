@@ -92,6 +92,8 @@
     <ClCompile Include="ZYK\Data_structure.cpp" />
     <ClCompile Include="ZYK\glm.cpp" />
     <ClCompile Include="ZYK\Image.cpp" />
+    <ClCompile Include="ZYK\mathematics.cpp" />
+    <ClCompile Include="ZYK\mesh_loader.cpp" />
     <ClCompile Include="ZYK\Objects.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -126,6 +128,8 @@
     <ClInclude Include="ZYK\Data_structure.h" />
     <ClInclude Include="ZYK\glm.h" />
     <ClInclude Include="ZYK\Image.h" />
+    <ClInclude Include="ZYK\mathematics.h" />
+    <ClInclude Include="ZYK\mesh_loader.h" />
     <ClInclude Include="ZYK\Objects.h" />
     <ClInclude Include="ZYK\stb_image.h" />
   </ItemGroup>

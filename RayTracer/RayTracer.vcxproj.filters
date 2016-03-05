@@ -71,6 +71,12 @@
     <ClCompile Include="ZYK\glm.cpp">
       <Filter>ZYK</Filter>
     </ClCompile>
+    <ClCompile Include="ZYK\mathematics.cpp">
+      <Filter>ZYK</Filter>
+    </ClCompile>
+    <ClCompile Include="ZYK\mesh_loader.cpp">
+      <Filter>ZYK</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="raytracer.h">
@@ -106,6 +112,12 @@
       <Filter>ZYK</Filter>
     </ClInclude>
     <ClInclude Include="ZYK\glm.h">
+      <Filter>ZYK</Filter>
+    </ClInclude>
+    <ClInclude Include="ZYK\mathematics.h">
+      <Filter>ZYK</Filter>
+    </ClInclude>
+    <ClInclude Include="ZYK\mesh_loader.h">
       <Filter>ZYK</Filter>
     </ClInclude>
   </ItemGroup>

@@ -32,6 +32,7 @@ protected:
 	void render_2_viewport(zyk::UCHAR3*buffer);
 	void ray_tracing(zyk::UCHAR3*buffer);
 	void renderTest();
+	Vec4 reflectLighting(const Vec3&origin,const Vec3&ray_dir,int depth);
 
 private:
 	Ui::RayTracerClass ui;
@@ -39,6 +40,7 @@ private:
 	QImage viewport_image;
 	std::vector<zyk::Object*> m_objects;
 	bool draw_shadow,draw_reflect;
+	int mMax_depth;
 };
 
 #endif // RAYTRACER_H
