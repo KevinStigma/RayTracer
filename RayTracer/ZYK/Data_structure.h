@@ -142,7 +142,8 @@ namespace zyk
 		int   iaux1, iaux2; // auxiliary vars for future expansion
 		float faux1, faux2;
 		void *ptr;
-
+	public:
+		EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 	}Light, *Light_Ptr;
 
 	typedef struct tag_Camera
