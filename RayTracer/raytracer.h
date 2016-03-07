@@ -41,7 +41,7 @@ protected:
 		const Vec3& shad_pos,const Vec3& pNormal,Vec4& pColor);
 	Vec4 calPhongShading_manyLights(const zyk::Material& pMaterial,const std::vector<bool>& is_lighting,
 		const Vec3& cam_pos,const Vec3& shad_pos,const Vec3& pNormal);
-	void savePic();
+	void savePic();//save current picture in the data folder
 
 private:
 	Ui::RayTracerClass ui;

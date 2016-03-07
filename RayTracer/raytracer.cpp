@@ -317,9 +317,9 @@ void RayTracer::drawReflectSet()
 	draw_reflect=ui.drawReflectCheck->isChecked();
 }
 
-//here we write some code to test effects of rendering
 void RayTracer::renderTest()
 {
+	//here we write some code to test effects of rendering
 	zyk::Sphere* small_sphere=dynamic_cast<zyk::Sphere*>(m_objects[1]);
 	assert(small_sphere);
 	const float radius=4.5f;
@@ -337,7 +337,6 @@ void RayTracer::renderTest()
 	}
 }
 
-//save current picture in the data folder
 void RayTracer::savePic()
 {
 	std::string filename;
