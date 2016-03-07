@@ -42,6 +42,8 @@ public:
     QLabel *render_label;
     QCheckBox *drawShadowCheck;
     QCheckBox *drawReflectCheck;
+    QLineEdit *depthEdit;
+    QLabel *label_6;
     QMenuBar *menuBar;
     QToolBar *mainToolBar;
     QStatusBar *statusBar;
@@ -66,7 +68,7 @@ public:
         label->setFont(font1);
         RenderButton = new QPushButton(centralWidget);
         RenderButton->setObjectName(QStringLiteral("RenderButton"));
-        RenderButton->setGeometry(QRect(880, 160, 81, 31));
+        RenderButton->setGeometry(QRect(880, 190, 81, 31));
         posXEdit = new QLineEdit(centralWidget);
         posXEdit->setObjectName(QStringLiteral("posXEdit"));
         posXEdit->setGeometry(QRect(860, 50, 31, 20));
@@ -99,18 +101,28 @@ public:
         render_label->setGeometry(QRect(20, 10, 54, 12));
         drawShadowCheck = new QCheckBox(centralWidget);
         drawShadowCheck->setObjectName(QStringLiteral("drawShadowCheck"));
-        drawShadowCheck->setGeometry(QRect(850, 90, 131, 16));
+        drawShadowCheck->setGeometry(QRect(850, 120, 131, 16));
         drawShadowCheck->setFont(font1);
         drawShadowCheck->setChecked(true);
         drawReflectCheck = new QCheckBox(centralWidget);
         drawReflectCheck->setObjectName(QStringLiteral("drawReflectCheck"));
-        drawReflectCheck->setGeometry(QRect(850, 120, 161, 16));
+        drawReflectCheck->setGeometry(QRect(850, 150, 161, 16));
         drawReflectCheck->setFont(font1);
         drawReflectCheck->setChecked(true);
+        depthEdit = new QLineEdit(centralWidget);
+        depthEdit->setObjectName(QStringLiteral("depthEdit"));
+        depthEdit->setGeometry(QRect(900, 90, 31, 20));
+        label_6 = new QLabel(centralWidget);
+        label_6->setObjectName(QStringLiteral("label_6"));
+        label_6->setGeometry(QRect(850, 90, 41, 16));
+        QFont font3;
+        font3.setBold(true);
+        font3.setWeight(75);
+        label_6->setFont(font3);
         RayTracerClass->setCentralWidget(centralWidget);
         menuBar = new QMenuBar(RayTracerClass);
         menuBar->setObjectName(QStringLiteral("menuBar"));
-        menuBar->setGeometry(QRect(0, 0, 1026, 25));
+        menuBar->setGeometry(QRect(0, 0, 1026, 23));
         RayTracerClass->setMenuBar(menuBar);
         mainToolBar = new QToolBar(RayTracerClass);
         mainToolBar->setObjectName(QStringLiteral("mainToolBar"));
@@ -139,6 +151,8 @@ public:
         render_label->setText(QApplication::translate("RayTracerClass", "TextLabel", 0));
         drawShadowCheck->setText(QApplication::translate("RayTracerClass", "Draw Shadow", 0));
         drawReflectCheck->setText(QApplication::translate("RayTracerClass", "Draw Reflection", 0));
+        depthEdit->setText(QApplication::translate("RayTracerClass", "1", 0));
+        label_6->setText(QApplication::translate("RayTracerClass", "Depth", 0));
     } // retranslateUi
 
 };

@@ -45,6 +45,8 @@ void RayTracer::renderScene()
 	pCam.backup_pos=pCam.pos;
 	pCam.reset_camera_matrix();
 
+	mMax_depth=ui.depthEdit->text().toFloat();
+
 #ifdef RECORD_TIME
 	DWORD start_time=GetTickCount();
 #endif
@@ -84,22 +86,32 @@ void RayTracer::init_objects()
 	//tri_mesh->translate(-center);
 	//tri_mesh->setMat(&g_pGlobalSys->m_materials[0]);
 	//m_objects[0]=tri_mesh;
+
+
 	m_objects.resize(3);
-	m_objects[0]=new zyk::Sphere(Vec3(0,0,0),2);
-	m_objects[0]->setMat(&g_pGlobalSys->m_materials[1]);
+	m_objects[0]=new zyk::Sphere(Vec3(0,0,-5),2);
+	m_objects[0]->setMaterial(&g_pGlobalSys->m_materials[1]);
 
+	m_objects[1]=new zyk::Sphere(Vec3(0,4.5,-5),1.5);
+	m_objects[1]->setMaterial(&g_pGlobalSys->m_materials[2]);
 
-	float radian=130.0f*DEG_TO_RAD,radius=3;
+	m_objects[2]=new zyk::Sphere(Vec3(5.5,0,-5),1.5);
+	m_objects[2]->setMaterial(&g_pGlobalSys->m_materials[0]);
+
+	/*float radian=130.0f*DEG_TO_RAD,radius=3;
 	Vec3 vCenter(radius*cos(radian),0.5f,radius*sin(radian));
 	m_objects[1]=new zyk::Sphere(vCenter,0.5f);
-	//m_objects[1]=new zyk::Sphere(Vec3(-1.8,1,2),0.5f);
-	m_objects[1]->setMat(&g_pGlobalSys->m_materials[2]);
+	m_objects[1]->setMaterial(&g_pGlobalSys->m_materials[2]);
 
 	radian=20.0f*DEG_TO_RAD;
 	radius=4;
 	vCenter=Vec3(radius*cos(radian),0.7f,radius*sin(radian));
 	m_objects[2]=new zyk::Sphere(vCenter,0.8f);
-	m_objects[2]->setMat(&g_pGlobalSys->m_materials[0]);
+	m_objects[2]->setMaterial(&g_pGlobalSys->m_materials[0]);*/
+
+	/*m_objects[4]=new zyk::Plane3D(Vec3(1,0,0),Vec3(-5,0,0));
+	m_objects[4]->setMaterial(&g_pGlobalSys->m_materials[4]);*/
+
 }
 
 void RayTracer::render_2_viewport(zyk::UCHAR3*buffer)
@@ -166,21 +178,24 @@ Vec4 RayTracer::reflectLighting(const Vec3&origin,const Vec3&ray_dir,int depth)
 		return Vec4(0,0,0,1);
 
 	Vec3 reflect_dir=(ray_dir-2*ray_dir.dot(ref_nor)*ref_nor).normalized();
-	Vec4 ref_shade_color;
-	float ref_para=m_objects[near_reflect_id]->getMat()->km;
-	calPhongShading(*m_objects[near_reflect_id]->getMat(),g_pGlobalSys->m_light,g_pGlobalSys->m_cam.pos,ref_pt,ref_nor,ref_shade_color);
-	Vec4 final_color=ref_para*ref_shade_color+(1-ref_para)*reflectLighting(ref_pt+reflect_dir*0.01,reflect_dir,depth+1);
-	return final_color;
+	Vec4 shade_color;
+	float ref_para=m_objects[near_reflect_id]->getMaterial()->kr;
+	calPhongShading(*m_objects[near_reflect_id]->getMaterial(),g_pGlobalSys->m_light,g_pGlobalSys->m_cam.pos,ref_pt,ref_nor,shade_color);
+	Vec4 ref_color=reflectLighting(ref_pt+reflect_dir*0.01,reflect_dir,depth+1);
+	if(ref_color==Vec4(0,0,0,1)||depth==mMax_depth-1)
+		return shade_color;
+	else
+		return ref_para*shade_color+(1-ref_para)*ref_color;
 }
 
-#define DRAW_SHADOW
+#define ZDEBUG
 void RayTracer::ray_tracing(zyk::UCHAR3*buffer)
 {
 	//check if the objects are valid
 	if(!m_objects.size())
 		return;
 	for(int i=0;i<(int)m_objects.size();i++)
-		assert(m_objects[i]&&m_objects[i]->getMat());
+		assert(m_objects[i]&&m_objects[i]->getMaterial());
 
 	const zyk::Camera& v_cam=g_pGlobalSys->m_cam;
 	const Vec4 &view_plane=v_cam.view_plane;
@@ -195,6 +210,11 @@ void RayTracer::ray_tracing(zyk::UCHAR3*buffer)
 		int row_ind=i*v_cam.viewport_width;
 		for(int j=0;j<v_cam.viewport_width;j++)
 		{	
+#ifdef ZDEBUG
+			int test_x=400,test_y=216;
+			if(j==test_x&&i==test_y)
+				int z=0;
+#endif
 			//cast a ray to test if it intersects an object.
 			Vec3 pixel_pos(view_plane(0)+(j+0.5f)*inv_width*v_cam.view_width,
 				view_plane(2)-ratio_height*v_cam.view_height,
@@ -217,7 +237,8 @@ void RayTracer::ray_tracing(zyk::UCHAR3*buffer)
 				}
 			}
 
-
+			if(near_obj_id!=3)
+				int z=0;
 			bool in_shadow=false;
 			//shadow
 			if(draw_shadow)
@@ -242,25 +263,6 @@ void RayTracer::ray_tracing(zyk::UCHAR3*buffer)
 			{
 				Vec3 reflect_dir=(ray_dir-2*ray_dir.dot(v_normal)*v_normal).normalized();
 				ref_color=reflectLighting(v_inter_pt+reflect_dir*0.01f,reflect_dir,0);
-				/*Vec3 reflect_dir=(ray_dir-2*ray_dir.dot(v_normal)*v_normal).normalized();
-				Vec3 ref_nor,ref_pt;
-				for(int obj_id=0;obj_id<(int)m_objects.size();obj_id++)
-				{
-					if(near_obj_id==obj_id)
-						continue;
-					bool is_intersect=m_objects[obj_id]->intersect(v_inter_pt+reflect_dir*0.01f,reflect_dir,t,tmp_nor,tmp_inter_pt);
-					if(!is_intersect)
-						continue;
-					if(near_reflect_id==-1||t<min_t)
-					{
-						min_t=t;
-						near_reflect_id=obj_id;
-						ref_nor=tmp_nor;
-						ref_pt=tmp_inter_pt;
-					}
-				}
-				if(near_reflect_id!=-1)
-					calPhongShading(*m_objects[near_reflect_id]->getMat(),g_pGlobalSys->m_light,v_cam.pos,ref_pt,ref_nor,ref_color);*/
 			}
 
 			if(near_obj_id==-1)
@@ -269,9 +271,9 @@ void RayTracer::ray_tracing(zyk::UCHAR3*buffer)
 			if(!in_shadow)
 			{
 				Vec4 shade_color;
-				calPhongShading(*m_objects[near_obj_id]->getMat(),g_pGlobalSys->m_light,v_cam.pos,v_inter_pt,v_normal,shade_color);
+				calPhongShading(*m_objects[near_obj_id]->getMaterial(),g_pGlobalSys->m_light,v_cam.pos,v_inter_pt,v_normal,shade_color);
 				if(ref_color!=Vec4(0,0,0,1))
-					shade_color=shade_color*m_objects[near_obj_id]->getMat()->km+((1-m_objects[near_obj_id]->getMat()->km)*ref_color);
+					shade_color=shade_color*m_objects[near_obj_id]->getMaterial()->kr+((1-m_objects[near_obj_id]->getMaterial()->kr)*ref_color);
 				zyk::clip_0_to_1(shade_color);
 				fillColor(shade_color,buffer[index]);
 			}
@@ -311,6 +313,19 @@ void RayTracer::renderTest()
 	}
 }
 
+//save current picture in the data folder
+void RayTracer::savePic()
+{
+	std::string filename;
+	std::cout<<"file name:";
+	std::cin>>filename;
+
+	if(viewport_image.save(QString("../data/screenshot/")+QString::fromStdString(filename)+QString(".bmp")))
+		std::cout<<"Save image successfully!"<<std::endl;
+	else
+		std::cout<<"Save image fail!"<<std::endl;
+}
+
 void RayTracer::keyPressEvent(QKeyEvent *e)
 {
 	switch(e->key())
@@ -318,6 +333,11 @@ void RayTracer::keyPressEvent(QKeyEvent *e)
 	case Qt::Key_A:
 		{
 			renderTest();			
+			break;
+		}
+	case Qt::Key_S:
+		{
+			savePic();
 			break;
 		}
 	}

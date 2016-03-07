@@ -67,13 +67,6 @@ namespace zyk
 		};
 	};
 
-	
-	struct Plane3D
-	{
-		Vec3 p0; // point on the plane
-		Vec3 n; // normal to the plane (not necessarily a unit vector)
-	};
-
 	union TexCoord
 	{
 		struct 
@@ -102,7 +95,7 @@ namespace zyk
 		// and other special flags...
 
 		UCHAR3 color;            // color of material
-		float ka, kd, ks,km,power; // ambient, diffuse, specular, 
+		float ka, kd, ks,kr,power; // ambient, diffuse, specular, 
 		// coefficients, note they are 
 		// separate and scalars since many 
 		// modelers use this format
@@ -190,12 +183,7 @@ namespace zyk
 		// if view volume is NOT 90 degree then general 3d clipping
 		// must be employed
 		float near_clip_z;     // near z=constant clipping plane
-		float far_clip_z;      // far z=constant clipping plane
-
-		Plane3D rt_clip_plane;  // the right clipping plane
-		Plane3D lt_clip_plane;  // the left clipping plane
-		Plane3D tp_clip_plane;  // the top clipping plane
-		Plane3D bt_clip_plane;  // the bottom clipping plane                        
+		float far_clip_z;      // far z=constant clipping plane                   
 
 		// aspect ratio
 		float aspect_ratio;

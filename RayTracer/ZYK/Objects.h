@@ -1,3 +1,9 @@
+/*    
+ *	This header file defines objects inheritance framework used for ray tracing,
+ *  but you can also use it for other fileds.
+ *  Yuke Zhu
+ *  kevinstigma@gmail.com
+ */
 #ifndef OBJECTS_H
 #define OBJECTS_H
 #include "Data_structure.h"
@@ -12,8 +18,8 @@ namespace zyk
 		virtual ~Object(){}
 		virtual bool intersect(const Vec3& origin,const Vec3& dir,float& t,Vec3& normal,Vec3& intersect_pt)const=0;
 		virtual bool intersect(const Vec3& origin,const Vec3& dir,float& t)const=0;
-		void setMat(Material_Ptr mat) {m_material=mat;}
-		const Material_Ptr getMat()const {return m_material;}
+		void setMaterial(Material_Ptr mat) {m_material=mat;}
+		const Material_Ptr getMaterial()const {return m_material;}
 	protected:
 		Material_Ptr m_material;
 	};
@@ -26,6 +32,19 @@ namespace zyk
 		virtual bool intersect(const Vec3& origin,const Vec3& dir,float& t)const;
 		Vec3 center;
 		float radius;
+	};
+
+
+	class Plane3D:public Object
+	{
+	public:
+		Plane3D();
+		Plane3D(const Vec3&pNormal,const Vec3&pPoint);
+		void setPlan3D(const Vec3& pNormal,const Vec3 &pPoint);
+		virtual bool intersect(const Vec3& origin,const Vec3& dir,float& t,Vec3& normal,Vec3& intersect_pt)const;
+		virtual bool intersect(const Vec3& origin,const Vec3& dir,float& t)const;
+		float d;
+		Vec3 n;
 	};
 
 	class TriMesh:public Object

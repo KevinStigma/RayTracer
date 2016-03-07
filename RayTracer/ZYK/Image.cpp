@@ -8,6 +8,7 @@ namespace zyk
 		data = stbi_load(filename, &width, &height, &nbytes, 0);
 		if(!data)
 			return false;
+		return true;
 	}
 
 	void Image::free_data()

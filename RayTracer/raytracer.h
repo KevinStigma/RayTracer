@@ -33,6 +33,7 @@ protected:
 	void ray_tracing(zyk::UCHAR3*buffer);
 	void renderTest();
 	Vec4 reflectLighting(const Vec3&origin,const Vec3&ray_dir,int depth);
+	void savePic();
 
 private:
 	Ui::RayTracerClass ui;

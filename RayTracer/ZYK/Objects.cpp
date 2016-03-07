@@ -45,10 +45,38 @@ namespace zyk
 		return true;
 	}
 
-	TriMesh::TriMesh():mModel(NULL)
-	{
+	Plane3D::Plane3D():d(0),n(0,0,0){}
 
+	Plane3D::Plane3D(const Vec3&pNormal,const Vec3&pPoint)
+	{
+		setPlan3D(pNormal,pPoint);
 	}
+
+	void Plane3D::setPlan3D(const Vec3& pNormal,const Vec3 &pPoint)
+	{
+		n=pNormal.normalized();
+		d=-pPoint.dot(n);
+	}
+
+	bool Plane3D::intersect(const Vec3& origin,const Vec3& dir,float& t,Vec3& normal,Vec3& intersect_pt)const
+	{
+		if(!intersect(origin,dir,t))
+			return false;
+		intersect_pt=origin+dir*t;
+		normal=n;
+		return true;
+	}
+
+	bool Plane3D::intersect(const Vec3& origin,const Vec3& dir,float& t)const
+	{
+		t=-(origin.dot(n)+d)/dir.dot(n);
+		if(t>0)
+			return true;
+		else 
+			return false;
+	}
+
+	TriMesh::TriMesh():mModel(NULL){}
 
 	bool TriMesh::intersect(const Vec3& origin,const Vec3& ray_dir,float& t,Vec3& normal,Vec3& intersect_pt)const 
 	{

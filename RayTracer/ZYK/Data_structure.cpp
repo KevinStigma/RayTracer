@@ -2,7 +2,6 @@
 
 namespace zyk
 {
-	
 	void Camera::init(float width,float height)
 	{
 		aspect_ratio=width/height;
@@ -13,7 +12,7 @@ namespace zyk
 		far_clip_z=1000.0f;
 		view_dist=near_clip_z;
 		backup_target=target=Vec3(0,0,0);
-		backup_pos=pos=Vec3(0,0,5);
+		backup_pos=pos=Vec3(0,0,10);
 		n=-(target-pos).normalized();
 
 		//u=Vec3(-1,0,0);
@@ -24,7 +23,7 @@ namespace zyk
 		view_height=near_clip_z*tan(fov*DEG_TO_RAD*0.5f)*2.0f;
 		view_width=view_height*aspect_ratio;
 		view_plane=Vec4(-view_width*0.5f,view_width*0.5f,view_height*0.5f,-view_height*0.5f);
-		
+
 		reset_camera_matrix();
 		reset_perspective_proj_matrix();
 		reset_viewport_matrix();
