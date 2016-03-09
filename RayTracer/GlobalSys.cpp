@@ -45,18 +45,21 @@ void CGlobalSys::init_Light()
 void CGlobalSys::init_Material()
 {
 	float inv_255=1/255.0f;
+	float tmp_kr=0.4;
 	m_materials[0].name="gray";
 	m_materials[0].attr=2; 
-	m_materials[0].color.x=200;
-	m_materials[0].color.y=200;
-	m_materials[0].color.z=200;
+	m_materials[0].color.x=154;
+	m_materials[0].color.y=169;
+	m_materials[0].color.z=192;
 
 	m_materials[0].ks=m_materials[0].kd=m_materials[0].ka=1.0f;
-	m_materials[0].kr=0.7f;
+	m_materials[0].kr=tmp_kr;
 	m_materials[0].power=50.0f;
-	m_materials[0].ra=Vec4(0.12108f,0.13282f,0.15078f,1.0f);
-	m_materials[0].rd=Vec4(0.48432f,0.53128f,0.60312f,1.0f);
-	m_materials[0].rs=Vec4(1.0f,1.0f,1.0f,1.0f);
+	m_materials[0].ra=Vec4(m_materials[0].color.x*0.2f*inv_255,m_materials[0].color.y*0.2f*inv_255,m_materials[0].color.z*0.2f*inv_255,1.0f);
+	m_materials[0].rd=Vec4(m_materials[0].color.x*0.8f*inv_255,m_materials[0].color.y*0.8f*inv_255,m_materials[0].color.z*0.8f*inv_255,1.0f);
+	//m_materials[0].rs=Vec4(1.0f,1.0f,1.0f,1.0f);
+	m_materials[0].rs=Vec4(0.1f,0.1f,0.1f,1.0f);
+	m_materials[0].is_solid=true;
 	
 	m_materials[1].name="yellow";
 	m_materials[1].attr=2; 
@@ -65,11 +68,13 @@ void CGlobalSys::init_Material()
 	m_materials[1].color.z=134;
 
 	m_materials[1].ks=m_materials[1].kd=m_materials[1].ka=1.0f;
-	m_materials[1].kr=0.7f;
+	m_materials[1].kr=tmp_kr;
 	m_materials[1].power=50.0f;
 	m_materials[1].ra=Vec4(m_materials[1].color.x*0.3f*inv_255,m_materials[1].color.y*0.3f*inv_255,m_materials[1].color.z*0.3f*inv_255,1.0f);
 	m_materials[1].rd=Vec4(m_materials[1].color.x*0.7f*inv_255,m_materials[1].color.y*0.7f*inv_255,m_materials[1].color.z*0.7f*inv_255,1.0f);
-	m_materials[1].rs=Vec4(1.0f,1.0f,1.0f,1.0f);
+	//m_materials[1].rs=Vec4(1.0f,1.0f,1.0f,1.0f);
+	m_materials[1].rs=Vec4(0.1f,0.1f,0.1f,1.0f);
+	m_materials[1].is_solid=true;
 
 	m_materials[2].name="purple";
 	m_materials[2].attr=2; 
@@ -78,11 +83,13 @@ void CGlobalSys::init_Material()
 	m_materials[2].color.z=124;
 
 	m_materials[2].ks=m_materials[2].kd=m_materials[2].ka=1.0f;
-	m_materials[2].kr=0.7f;
+	m_materials[2].kr=tmp_kr;
 	m_materials[2].power=50.0f;
 	m_materials[2].ra=Vec4(m_materials[2].color.x*0.3f*inv_255,m_materials[2].color.y*0.3f*inv_255,m_materials[2].color.z*0.3f*inv_255,1.0f);
 	m_materials[2].rd=Vec4(m_materials[2].color.x*0.7f*inv_255,m_materials[2].color.y*0.7f*inv_255,m_materials[2].color.z*0.7f*inv_255,1.0f);
-	m_materials[2].rs=Vec4(1.0f,1.0f,1.0f,1.0f);
+	//m_materials[2].rs=Vec4(1.0f,1.0f,1.0f,1.0f);
+	m_materials[2].rs=Vec4(0.1f,0.1f,0.1f,1.0f);
+	m_materials[2].is_solid=true;
 
 	m_materials[3].name="cyan";
 	m_materials[3].attr=2; 
@@ -91,11 +98,13 @@ void CGlobalSys::init_Material()
 	m_materials[3].color.z=255;
 
 	m_materials[3].ks=m_materials[3].kd=m_materials[3].ka=1.0f;
-	m_materials[3].kr=0.7f;
+	m_materials[3].kr=tmp_kr;
 	m_materials[3].power=50.0f;
 	m_materials[3].ra=Vec4(m_materials[3].color.x*0.3f*inv_255,m_materials[3].color.y*0.3f*inv_255,m_materials[3].color.z*0.3f*inv_255,1.0f);
 	m_materials[3].rd=Vec4(m_materials[3].color.x*0.7f*inv_255,m_materials[3].color.y*0.7f*inv_255,m_materials[3].color.z*0.7f*inv_255,1.0f);
-	m_materials[3].rs=Vec4(1.0f,1.0f,1.0f,1.0f);
+	//m_materials[3].rs=Vec4(1.0f,1.0f,1.0f,1.0f);
+	m_materials[3].rs=Vec4(0.1f,0.1f,0.1f,1.0f);
+	m_materials[3].is_solid=true;
 
 	m_materials[4].name="red";
 	m_materials[4].attr=2; 
@@ -104,9 +113,11 @@ void CGlobalSys::init_Material()
 	m_materials[4].color.z=93;
 
 	m_materials[4].ks=m_materials[4].kd=m_materials[4].ka=1.0f;
-	m_materials[4].kr=0.7f;
+	m_materials[4].kr=tmp_kr;
 	m_materials[4].power=50.0f;
 	m_materials[4].ra=Vec4(m_materials[4].color.x*0.3f*inv_255,m_materials[4].color.y*0.3f*inv_255,m_materials[4].color.z*0.3f*inv_255,1.0f);
 	m_materials[4].rd=Vec4(m_materials[4].color.x*0.7f*inv_255,m_materials[4].color.y*0.7f*inv_255,m_materials[4].color.z*0.7f*inv_255,1.0f);
-	m_materials[4].rs=Vec4(1.0f,1.0f,1.0f,1.0f);
+	//m_materials[4].rs=Vec4(1.0f,1.0f,1.0f,1.0f);
+	m_materials[4].rs=Vec4(0.1f,0.1f,0.1f,1.0f);
+	m_materials[4].is_solid=true;
 }

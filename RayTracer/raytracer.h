@@ -31,8 +31,13 @@ protected:
 	void initObjects();
 	void renderViewport(zyk::UCHAR3*buffer);
 	void rayTracing(zyk::UCHAR3*buffer);
-	Vec3 castRay(const zyk::Camera&pCam,const float p_radio_height,int x,int y);
+	Vec3 rayCasting(const zyk::Camera&pCam,int x,int y);
 	void renderTest();
+	void fresnel(float cos1,float cos2,const float rei[],float &kr)const; 
+	bool refractRay(const Vec3& origin,const Vec3&incident_dir,const Vec3& normal,const float rei[],
+		Vec3& refract_dir,float& ref_weight)const;
+	
+	Vec4 castRayShading(const Vec3& origin,const Vec3& ray_dir,int depth,float input_rei=1.0f);
 	Vec4 reflectLighting(const Vec3&origin,const Vec3&ray_dir,int depth);
 	void shadowCheck(int lightsNum,const zyk::Light* lights,const Vec3&intersect_pt,std::vector<bool>& is_lighting);
 	void intersectionCheck(const std::vector<zyk::Object*>& objects,const Vec3& origin,const Vec3& ray_dir,

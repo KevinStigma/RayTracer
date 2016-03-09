@@ -187,11 +187,16 @@ void RayTracer::shadowCheck(int lightsNum,const zyk::Light* lights,const Vec3&in
 	}
 }
 
-Vec3 RayTracer::castRay(const zyk::Camera&pCam,const float p_radio_height,int x,int y)
+/**
+	get a 3D ray based on a given point
+*/
+Vec3 RayTracer::rayCasting(const zyk::Camera&pCam,int x,int y)
 {
 	static float inv_width=1.0f/pCam.viewport_width;
+	static float inv_height=1.0f/pCam.viewport_height;
+
 	Vec3 pixel_pos(pCam.view_plane(0)+(x+0.5f)*inv_width*pCam.view_width,
-		pCam.view_plane(2)-p_radio_height*pCam.view_height,
+		pCam.view_plane(2)-(y+0.5f)*inv_height*pCam.view_height,
 		pCam.pos(2)-pCam.near_clip_z);
 	return (pixel_pos-pCam.pos).normalized();
 }
@@ -218,13 +223,93 @@ void RayTracer::intersectionCheck(const std::vector<zyk::Object*>& pObjects,cons
 }
 inline void combineColor(float ref_para,const Vec4&pRefColor,Vec4& pShadeColor)
 {
+	pShadeColor=pShadeColor+ref_para*pRefColor;
+	zyk::clip_0_to_1(pShadeColor);
+	/*
 	if(pRefColor!=Vec4(0,0,0,1))
 	{
 		pShadeColor=(1-ref_para)*pShadeColor+ref_para*pRefColor;
 		zyk::clip_0_to_1(pShadeColor);
-	}
+	}*/
 }
 
+void RayTracer::fresnel(float cos1,float cos2,const float rei[],float &kr)const
+{
+	//in fact, this function should check if there exists total internal reflection,
+	//but now that its father function refractRay has this detection, I don't consider
+	//this situation in the function
+	float fr1,fr2;
+	fr1=(rei[1]*cos1-rei[0]*cos2)/(rei[1]*cos1+rei[0]*cos2);
+	fr2=(rei[0]*cos2-rei[1]*cos1)/(rei[0]*cos2+rei[1]*cos1);
+	kr=(fr1*fr1+fr2*fr2)*0.5f;
+}
+
+bool RayTracer::refractRay(const Vec3& origin,const Vec3&incident_dir,const Vec3& normal,const float rei[],
+	Vec3& refract_dir,float& ref_weight)const
+{
+	float eta=rei[0]/rei[1];
+	float c1=normal.dot(incident_dir),c2=1-eta*eta*(1-c1*c1);
+	if(c2<0)
+	{
+		ref_weight=1.0f;
+		return false;
+	}
+
+	Vec3 v_nor=normal;
+	if(c1<0.0f)
+		c1=-c1;
+	else
+		v_nor*=-1;
+	refract_dir=eta*incident_dir+(eta*c1-sqrt(c2))*v_nor;
+	fresnel(c1,fabs(refract_dir.dot(normal)),rei,ref_weight);
+	return true;
+}
+
+Vec4 RayTracer::castRayShading(const Vec3& origin,const Vec3& ray_dir,int depth,float input_rei)
+{
+	if(depth==mMax_depth+1)
+		return Vec4(0,0,0,1);
+	int near_obj_id=-1;
+	Vec3 inter_nor,inter_pt;
+	intersectionCheck(m_objects,origin,ray_dir,near_obj_id,inter_nor,inter_pt);
+
+	if(near_obj_id==-1)
+		return Vec4(0,0,0,1);
+	
+	Vec3 reflect_dir=(ray_dir-2*ray_dir.dot(inter_nor)*inter_nor).normalized();
+	Vec4 ref_color=castRayShading(inter_pt+reflect_dir*0.01,reflect_dir,depth+1,input_rei);
+	Vec4 shade_color;
+	
+	if(m_objects[near_obj_id]->getMaterial()->is_solid)
+	{
+		std::vector<bool> is_lighting(g_pGlobalSys->mLightNum,true);
+		if(draw_shadow)
+			shadowCheck(g_pGlobalSys->mLightNum,g_pGlobalSys->mLights,inter_pt,is_lighting);
+
+		shade_color=calPhongShading_manyLights(*m_objects[near_obj_id]->getMaterial(),is_lighting,g_pGlobalSys->m_cam.pos,
+			inter_pt,inter_nor);
+
+		float ref_para=m_objects[near_obj_id]->getMaterial()->kr;
+		combineColor(ref_para,ref_color,shade_color);	
+	}
+	else
+	{
+		float rei[2]={input_rei,m_objects[near_obj_id]->getMaterial()->refra_index};
+		Vec3 refra_dir;
+		float ref_weight,refra_weight;
+		bool is_refract=refractRay(inter_pt,ray_dir,inter_nor,rei,refra_dir,ref_weight);
+		if(is_refract)
+		{
+			refra_weight=1-ref_weight;
+			Vec4 refra_color=castRayShading(inter_pt+refra_dir*0.01,refra_dir,depth+1,rei[1]);
+			shade_color=ref_color*ref_weight+refra_color*refra_weight;
+		}
+		else
+			shade_color=ref_color;
+		zyk::clip_0_to_1(shade_color);
+	}
+	return shade_color;
+}
 
 Vec4 RayTracer::reflectLighting(const Vec3&origin,const Vec3&ray_dir,int depth)
 {
@@ -252,8 +337,6 @@ Vec4 RayTracer::reflectLighting(const Vec3&origin,const Vec3&ray_dir,int depth)
 	return shade_color;
 }
 
-
-
 #define ZDEBUG
 void RayTracer::rayTracing(zyk::UCHAR3*buffer)
 {
@@ -270,7 +353,6 @@ void RayTracer::rayTracing(zyk::UCHAR3*buffer)
 
 	for(int i=0;i<v_cam.viewport_height;i++)
 	{
-		float ratio_height=(i+0.5f)/v_cam.viewport_height;
 		int row_ind=i*v_cam.viewport_width;
 		for(int j=0;j<v_cam.viewport_width;j++)
 		{	
@@ -279,29 +361,8 @@ void RayTracer::rayTracing(zyk::UCHAR3*buffer)
 			if(j==test_x&&i==test_y)
 				int z=0;
 #endif
-			Vec3 ray_dir=castRay(v_cam,ratio_height,j,i);
-			
-			int near_obj_id=-1;
-			intersectionCheck(m_objects,v_cam.pos,ray_dir,near_obj_id,v_normal,v_inter_pt);
-			if(near_obj_id==-1)//the ray doesn't intersect any objects
-				continue;
-
-			std::vector<bool> is_lighting(lightsNum,true);
-			if(draw_shadow)
-				shadowCheck(lightsNum,lights,v_inter_pt,is_lighting);
-
-			//reflection
-			Vec4 ref_color(0,0,0,1);
-			if(draw_reflect)
-			{
-				Vec3 reflect_dir=(ray_dir-2*ray_dir.dot(v_normal)*v_normal).normalized();
-				ref_color=reflectLighting(v_inter_pt+reflect_dir*0.01f,reflect_dir,0);
-			}
-
-			Vec4 shade_color=calPhongShading_manyLights(*m_objects[near_obj_id]->getMaterial(),
-				is_lighting,g_pGlobalSys->m_cam.pos,v_inter_pt,v_normal);
-			
-			combineColor(m_objects[near_obj_id]->getMaterial()->kr,ref_color,shade_color);
+			Vec3 ray_dir=rayCasting(v_cam,j,i);
+			Vec4 shade_color=castRayShading(v_cam.pos,ray_dir,0);
 			fillColor(shade_color,buffer[row_ind+j]);
 		}
 	}

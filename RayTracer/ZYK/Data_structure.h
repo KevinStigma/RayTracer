@@ -111,6 +111,8 @@ namespace zyk
 
 		std::string texture_file;   // file location of texture
 		Image texture;    // actual texture map (if any)
+		bool is_solid;
+		float refra_index;
 
 		int   iaux1, iaux2;      // auxiliary vars for future expansion
 		float faux1, faux2;
