@@ -95,7 +95,8 @@ namespace zyk
 			{
 				intersect_pt=origin+t*ray_dir;
 				//normal interpolation
-				normal=(1-coord_para(0)-coord_para(1))*vNormal[0]+coord_para(0)*vNormal[1]+coord_para(1)*vNormal[2];
+				normal=(1-coord_para(0)-coord_para(1))*vNormal[0]+
+					coord_para(0)*vNormal[1]+coord_para(1)*vNormal[2];
 				return true;
 			}
 		}
@@ -225,5 +226,40 @@ namespace zyk
 			glmDelete( mModel );
 			mModel = NULL;
 		}
+	}
+
+	Triangle::Triangle(Vec3 triangle_pt[])
+	{
+		setPoints(triangle_pt);
+		mNormal=(tri_pt[1]-tri_pt[0]).cross(tri_pt[2]-tri_pt[1]);
+		mNormal.normalize();
+	}
+
+	inline void Triangle::reverseNormal(){mNormal=-mNormal;}
+	Triangle::~Triangle(){}
+
+	bool Triangle::intersect(const Vec3& origin,const Vec3& dir,float& t,Vec3& normal,Vec3& intersect_pt)const
+	{
+		if(intersect(origin,dir,t))
+		{
+			intersect_pt=origin+t*dir;
+			normal=mNormal;
+			return true;
+		}
+		return false;
+	}
+
+	bool Triangle::intersect(const Vec3& origin,const Vec3& dir,float& t)const
+	{
+		Vec2 coord_para;
+		if(tri_intersect_test(origin,dir,tri_pt,t,coord_para)&&t>0)
+			return true;
+		return false;
+	}
+
+	inline void Triangle::setPoints(Vec3 triangle_pt[])
+	{
+		for(int i=0;i<3;i++)
+			tri_pt[i]=triangle_pt[i];
 	}
 };

@@ -64,5 +64,20 @@ namespace zyk
 		GLMmodel* mModel;
 		Vec3 m_center;
 	};
+
+
+	class Triangle:public Object
+	{
+	public:
+		Triangle(Vec3 triangle_pt[]);
+		~Triangle();
+		virtual bool intersect(const Vec3& origin,const Vec3& dir,float& t,Vec3& normal,Vec3& intersect_pt)const;
+		virtual bool intersect(const Vec3& origin,const Vec3& dir,float& t)const;
+		void setPoints(Vec3 triangle_pt[]);
+		void reverseNormal();
+		Vec3 mNormal;
+	private:
+		Vec3 tri_pt[3];
+	};
 };
 #endif

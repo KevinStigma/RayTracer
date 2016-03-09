@@ -59,7 +59,7 @@ namespace zyk
 		std::vector<std::vector<int>> vert_2_face(num_vertices);
 		for(int i=0;i<num_polys;i++)
 		{
-			zyk::Polygon& poly=plist[i];
+			zyk::Facet& poly=plist[i];
 			if(poly.state)
 				continue;  //the poly has been culled
 

@@ -2,14 +2,16 @@
 #include "GlobalSys.h"
 #include "zyk/Objects.h"
 #include "zyk/mathematics.h"
+#include <typeinfo>
 #include <windows.h>
 #include <WinBase.h>
 
 RayTracer::RayTracer(QWidget *parent)
 	: QMainWindow(parent),render_buffer(NULL),viewport_image(g_pGlobalSys->viewport_width,g_pGlobalSys->viewport_height,QImage::Format_RGB888),
-	draw_shadow(true),draw_reflect(true),mMax_depth(1)
+	draw_shadow(false),draw_reflect(true),mMax_depth(1)
 {
 	ui.setupUi(this);
+	setFixedSize(1026,703);
 	connect(ui.RenderButton,SIGNAL(clicked()),this,SLOT(renderScene()));
 	connect(ui.drawShadowCheck,SIGNAL(clicked()),this,SLOT(drawShadowSet()));
 	connect(ui.drawReflectCheck,SIGNAL(clicked()),this,SLOT(drawReflectSet()));
@@ -72,22 +74,10 @@ void RayTracer::initRenderBuffer(zyk::UCHAR3*buffer)
 	}
 }
 
+#define REFRAC_TEST
 void RayTracer::initObjects()
 {
-	//m_objects.resize(1);
-	//zyk::TriMesh* tri_mesh=new zyk::TriMesh;
-	//if(!tri_mesh->importMesh(std::string("../data/Mesh/cube.obj")))
-	//{
-	//	std::cout<<"Can't read mesh successfully!"<<std::endl;
-	//	exit(0);
-	//}
-	////tri_mesh->scaleMesh(Vec3(0.015,0.015,0.015));
-	//Vec3 center=tri_mesh->getCenter();
-	//tri_mesh->translate(-center);
-	//tri_mesh->setMat(&g_pGlobalSys->m_materials[0]);
-	//m_objects[0]=tri_mesh;
-
-
+#ifndef REFRAC_TEST
 	m_objects.resize(3);
 	m_objects[0]=new zyk::Sphere(Vec3(0,0,-5),2);
 	m_objects[0]->setMaterial(&g_pGlobalSys->m_materials[1]);
@@ -97,21 +87,20 @@ void RayTracer::initObjects()
 
 	m_objects[2]=new zyk::Sphere(Vec3(5.5,0,-5),1.5);
 	m_objects[2]->setMaterial(&g_pGlobalSys->m_materials[0]);
+#else
+	m_objects.resize(2);
 
-	/*float radian=130.0f*DEG_TO_RAD,radius=3;
-	Vec3 vCenter(radius*cos(radian),0.5f,radius*sin(radian));
-	m_objects[1]=new zyk::Sphere(vCenter,0.5f);
-	m_objects[1]->setMaterial(&g_pGlobalSys->m_materials[2]);
+	Vec3 triangle_pt[3]={Vec3(5,4,-5),Vec3(3,-1,-5),Vec3(9,-1,-5)};
+	m_objects[0]=new zyk::Triangle(triangle_pt);
+	m_objects[0]->setMaterial(&g_pGlobalSys->m_materials[1]);
+	
+	m_objects[1]=new zyk::Sphere(Vec3(0,0,4),1.5);
+	m_objects[1]->setMaterial(&g_pGlobalSys->m_materials[6]);
+	
+	//m_objects[1]=new zyk::Sphere(Vec3(2,-1,-2),2);
+	//m_objects[1]->setMaterial(&g_pGlobalSys->m_materials[6]);
 
-	radian=20.0f*DEG_TO_RAD;
-	radius=4;
-	vCenter=Vec3(radius*cos(radian),0.7f,radius*sin(radian));
-	m_objects[2]=new zyk::Sphere(vCenter,0.8f);
-	m_objects[2]->setMaterial(&g_pGlobalSys->m_materials[0]);*/
-
-	/*m_objects[4]=new zyk::Plane3D(Vec3(1,0,0),Vec3(-5,0,0));
-	m_objects[4]->setMaterial(&g_pGlobalSys->m_materials[4]);*/
-
+#endif
 }
 
 void RayTracer::renderViewport(zyk::UCHAR3*buffer)
@@ -294,46 +283,22 @@ Vec4 RayTracer::castRayShading(const Vec3& origin,const Vec3& ray_dir,int depth,
 	}
 	else
 	{
-		float rei[2]={input_rei,m_objects[near_obj_id]->getMaterial()->refra_index};
+		float rei[2]={input_rei,m_objects[near_obj_id]->getMaterial()->rei};
 		Vec3 refra_dir;
 		float ref_weight,refra_weight;
 		bool is_refract=refractRay(inter_pt,ray_dir,inter_nor,rei,refra_dir,ref_weight);
 		if(is_refract)
 		{
 			refra_weight=1-ref_weight;
-			Vec4 refra_color=castRayShading(inter_pt+refra_dir*0.01,refra_dir,depth+1,rei[1]);
+			float out_rei;
+			(typeid(*m_objects[near_obj_id])==typeid(zyk::Triangle))?out_rei=rei[0]:out_rei=rei[1];
+			Vec4 refra_color=castRayShading(inter_pt+refra_dir*0.01,refra_dir,depth+1,out_rei);
 			shade_color=ref_color*ref_weight+refra_color*refra_weight;
 		}
 		else
 			shade_color=ref_color;
 		zyk::clip_0_to_1(shade_color);
 	}
-	return shade_color;
-}
-
-Vec4 RayTracer::reflectLighting(const Vec3&origin,const Vec3&ray_dir,int depth)
-{
-	if(depth==mMax_depth)
-		return Vec4(0,0,0,1);
-	int near_reflect_id=-1;
-	Vec3 ref_nor,ref_pt;
-	intersectionCheck(m_objects,origin,ray_dir,near_reflect_id,ref_nor,ref_pt);
-
-	if(near_reflect_id==-1)
-		return Vec4(0,0,0,1);
-
-	std::vector<bool> is_lighting(g_pGlobalSys->mLightNum,true);
-	if(draw_shadow)
-		shadowCheck(g_pGlobalSys->mLightNum,g_pGlobalSys->mLights,ref_pt,is_lighting);
-
-	Vec4 shade_color=calPhongShading_manyLights(*m_objects[near_reflect_id]->getMaterial(),is_lighting,g_pGlobalSys->m_cam.pos,
-		ref_pt,ref_nor);
-
-	Vec3 reflect_dir=(ray_dir-2*ray_dir.dot(ref_nor)*ref_nor).normalized();
-	Vec4 ref_color=reflectLighting(ref_pt+reflect_dir*0.01,reflect_dir,depth+1);
-
-	float ref_para=m_objects[near_reflect_id]->getMaterial()->kr;
-	combineColor(m_objects[near_reflect_id]->getMaterial()->kr,ref_color,shade_color);
 	return shade_color;
 }
 
@@ -357,7 +322,7 @@ void RayTracer::rayTracing(zyk::UCHAR3*buffer)
 		for(int j=0;j<v_cam.viewport_width;j++)
 		{	
 #ifdef ZDEBUG
-			int test_x=399,test_y=4;
+			int test_x=399,test_y=297;
 			if(j==test_x&&i==test_y)
 				int z=0;
 #endif
@@ -398,7 +363,7 @@ void RayTracer::renderTest()
 	}
 }
 
-void RayTracer::savePic()
+void RayTracer::savePic()const
 {
 	std::string filename;
 	std::cout<<"file name:";

@@ -38,7 +38,6 @@ protected:
 		Vec3& refract_dir,float& ref_weight)const;
 	
 	Vec4 castRayShading(const Vec3& origin,const Vec3& ray_dir,int depth,float input_rei=1.0f);
-	Vec4 reflectLighting(const Vec3&origin,const Vec3&ray_dir,int depth);
 	void shadowCheck(int lightsNum,const zyk::Light* lights,const Vec3&intersect_pt,std::vector<bool>& is_lighting);
 	void intersectionCheck(const std::vector<zyk::Object*>& objects,const Vec3& origin,const Vec3& ray_dir,
 		int& near_obj_id,Vec3& inter_pt_nor,Vec3&inter_pt);
@@ -46,7 +45,7 @@ protected:
 		const Vec3& shad_pos,const Vec3& pNormal,Vec4& pColor);
 	Vec4 calPhongShading_manyLights(const zyk::Material& pMaterial,const std::vector<bool>& is_lighting,
 		const Vec3& cam_pos,const Vec3& shad_pos,const Vec3& pNormal);
-	void savePic();//save current picture in the data folder
+	void savePic()const;//save current picture in the data folder
 
 private:
 	Ui::RayTracerClass ui;

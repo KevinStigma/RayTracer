@@ -20,7 +20,7 @@ namespace zyk
 		Vec4 trans_normal;
 	public:
 		EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-	}Polygon,*Poly_Ptr;
+	}Facet,*Facet_Ptr;
 	
 	typedef struct tag_ObjectMesh
 	{
@@ -65,7 +65,7 @@ namespace zyk
 		Vec4 world_center;
 
 		int num_polys;        // number of polygons in object mesh
-		Polygon plist[OBJECT4DV1_MAX_POLYS]; // array of polygony
+		Facet plist[OBJECT4DV1_MAX_POLYS]; // array of polygony
 		Material_Ptr material;
 	public:
 		EIGEN_MAKE_ALIGNED_OPERATOR_NEW
