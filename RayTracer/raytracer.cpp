@@ -2,19 +2,23 @@
 #include "GlobalSys.h"
 #include "zyk/Objects.h"
 #include "zyk/mathematics.h"
+#include <tchar.h>
 #include <typeinfo>
 #include <windows.h>
 #include <WinBase.h>
+#include <QFileDialog>
+#include <QString>
 
 RayTracer::RayTracer(QWidget *parent)
 	: QMainWindow(parent),render_buffer(NULL),viewport_image(g_pGlobalSys->viewport_width,g_pGlobalSys->viewport_height,QImage::Format_RGB888),
-	draw_shadow(false),draw_reflect(true),mMax_depth(1)
+	draw_shadow(false),draw_reflect(true),mMax_depth(2)
 {
 	ui.setupUi(this);
 	setFixedSize(1026,703);
 	connect(ui.RenderButton,SIGNAL(clicked()),this,SLOT(renderScene()));
 	connect(ui.drawShadowCheck,SIGNAL(clicked()),this,SLOT(drawShadowSet()));
 	connect(ui.drawReflectCheck,SIGNAL(clicked()),this,SLOT(drawReflectSet()));
+	connect(ui.actionLoad_Scene,SIGNAL(triggered()),this,SLOT(loadScene()));
 
 	ui.render_label->setFixedSize(g_pGlobalSys->viewport_width,g_pGlobalSys->viewport_height);
 	render_buffer=new zyk::UCHAR3[g_pGlobalSys->pixel_num];
@@ -90,11 +94,12 @@ void RayTracer::initObjects()
 #else
 	m_objects.resize(2);
 
-	Vec3 triangle_pt[3]={Vec3(5,4,-5),Vec3(3,-1,-5),Vec3(9,-1,-5)};
-	m_objects[0]=new zyk::Triangle(triangle_pt);
-	m_objects[0]->setMaterial(&g_pGlobalSys->m_materials[1]);
+	//Vec3 triangle_pt[3]={Vec3(1.5,4,-5),Vec3(-0.5,-1,-5),Vec3(5.5,-1,-5)};
+	//m_objects[0]=new zyk::Triangle(triangle_pt);
+	m_objects[0]=new zyk::Sphere(Vec3(-2.2,0,-5),2);
+	m_objects[0]->setMaterial(&g_pGlobalSys->m_materials[2]);
 	
-	m_objects[1]=new zyk::Sphere(Vec3(0,0,4),1.5);
+	m_objects[1]=new zyk::Sphere(Vec3(0,0,1),1.5);
 	m_objects[1]->setMaterial(&g_pGlobalSys->m_materials[6]);
 	
 	//m_objects[1]=new zyk::Sphere(Vec3(2,-1,-2),2);
@@ -322,7 +327,7 @@ void RayTracer::rayTracing(zyk::UCHAR3*buffer)
 		for(int j=0;j<v_cam.viewport_width;j++)
 		{	
 #ifdef ZDEBUG
-			int test_x=399,test_y=297;
+			int test_x=217,test_y=274;
 			if(j==test_x&&i==test_y)
 				int z=0;
 #endif
@@ -341,6 +346,62 @@ void RayTracer::drawShadowSet()
 void RayTracer::drawReflectSet()
 {
 	draw_reflect=ui.drawReflectCheck->isChecked();
+}
+
+void RayTracer::loadScene()
+{
+	QString filename=QFileDialog::getOpenFileName(this,tr("Load Scene"),".",
+		"scene scripts(*.txt)", 0);
+	if(!filename.size())
+		return; 
+	std::ifstream in(filename.toStdWString());
+	if(!in.is_open())
+	{
+		std::cout<<"Can't open the file!"<<std::endl;
+		return;
+	}
+
+	int n;
+	in>>n;
+	std::string object_name;
+	
+	int mat_id,i;
+	for(i=0;i<(int)m_objects.size();i++)
+		delete m_objects[i];
+	m_objects.resize(n);
+	for(i=0;i<n;i++)
+	{
+		in>>object_name;
+		if(object_name=="Sphere")
+		{
+			float x,y,z,r;
+			in>>x>>y>>z>>r;
+			m_objects[i]=new zyk::Sphere(Vec3(x,y,z),r);
+		}
+		else if(object_name=="Triangle")
+		{
+			Vec3 pt[3];
+			for(int j=0;j<3;j++)
+				in>>pt[j][0]>>pt[j][1]>>pt[j][2];
+			m_objects[i]=new zyk::Triangle(pt);
+		}
+		else if(object_name=="Mesh")
+		{
+			std::string mesh_name;
+			in>>mesh_name;
+			m_objects[i]=new zyk::TriMesh(mesh_name);
+		}
+		else
+		{
+			std::cout<<"The Scene script has error!"<<std::endl;
+			break;
+		}
+		in>>mat_id;
+		m_objects[i]->setMaterial(&g_pGlobalSys->m_materials[mat_id]);
+	}
+	if(i==n)
+		std::cout<<"Load scene successfully!"<<std::endl;
+
 }
 
 void RayTracer::renderTest()

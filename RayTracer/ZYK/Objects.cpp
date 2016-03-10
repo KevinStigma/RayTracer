@@ -76,7 +76,11 @@ namespace zyk
 			return false;
 	}
 
-	TriMesh::TriMesh():mModel(NULL){}
+	TriMesh::TriMesh(const std::string& name):mModel(NULL)
+	{
+		if(!importMesh(name))
+			mModel=NULL;
+	}
 
 	bool TriMesh::intersect(const Vec3& origin,const Vec3& ray_dir,float& t,Vec3& normal,Vec3& intersect_pt)const 
 	{

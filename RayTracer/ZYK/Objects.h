@@ -50,7 +50,7 @@ namespace zyk
 	class TriMesh:public Object
 	{
 	public:
-		TriMesh();
+		TriMesh(const std::string& name);
 		~TriMesh();
 		bool importMesh(const std::string&filename);
 		void scaleMesh(const Vec3& scale);

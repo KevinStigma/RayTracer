@@ -18,6 +18,7 @@
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QLineEdit>
 #include <QtWidgets/QMainWindow>
+#include <QtWidgets/QMenu>
 #include <QtWidgets/QMenuBar>
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QStatusBar>
@@ -29,6 +30,7 @@ QT_BEGIN_NAMESPACE
 class Ui_RayTracerClass
 {
 public:
+    QAction *actionLoad_Scene;
     QWidget *centralWidget;
     QLabel *label;
     QPushButton *RenderButton;
@@ -45,6 +47,7 @@ public:
     QLineEdit *depthEdit;
     QLabel *label_6;
     QMenuBar *menuBar;
+    QMenu *menuFile;
     QToolBar *mainToolBar;
     QStatusBar *statusBar;
 
@@ -56,6 +59,8 @@ public:
         QFont font;
         font.setPointSize(10);
         RayTracerClass->setFont(font);
+        actionLoad_Scene = new QAction(RayTracerClass);
+        actionLoad_Scene->setObjectName(QStringLiteral("actionLoad_Scene"));
         centralWidget = new QWidget(RayTracerClass);
         centralWidget->setObjectName(QStringLiteral("centralWidget"));
         label = new QLabel(centralWidget);
@@ -122,7 +127,9 @@ public:
         RayTracerClass->setCentralWidget(centralWidget);
         menuBar = new QMenuBar(RayTracerClass);
         menuBar->setObjectName(QStringLiteral("menuBar"));
-        menuBar->setGeometry(QRect(0, 0, 1026, 23));
+        menuBar->setGeometry(QRect(0, 0, 1026, 26));
+        menuFile = new QMenu(menuBar);
+        menuFile->setObjectName(QStringLiteral("menuFile"));
         RayTracerClass->setMenuBar(menuBar);
         mainToolBar = new QToolBar(RayTracerClass);
         mainToolBar->setObjectName(QStringLiteral("mainToolBar"));
@@ -130,6 +137,9 @@ public:
         statusBar = new QStatusBar(RayTracerClass);
         statusBar->setObjectName(QStringLiteral("statusBar"));
         RayTracerClass->setStatusBar(statusBar);
+
+        menuBar->addAction(menuFile->menuAction());
+        menuFile->addAction(actionLoad_Scene);
 
         retranslateUi(RayTracerClass);
 
@@ -139,6 +149,7 @@ public:
     void retranslateUi(QMainWindow *RayTracerClass)
     {
         RayTracerClass->setWindowTitle(QApplication::translate("RayTracerClass", "RayTracer", 0));
+        actionLoad_Scene->setText(QApplication::translate("RayTracerClass", "Load Scene", 0));
         label->setText(QApplication::translate("RayTracerClass", "Camera Pos", 0));
         RenderButton->setText(QApplication::translate("RayTracerClass", "Render", 0));
         posXEdit->setText(QApplication::translate("RayTracerClass", "0", 0));
@@ -151,8 +162,9 @@ public:
         render_label->setText(QApplication::translate("RayTracerClass", "TextLabel", 0));
         drawShadowCheck->setText(QApplication::translate("RayTracerClass", "Draw Shadow", 0));
         drawReflectCheck->setText(QApplication::translate("RayTracerClass", "Draw Reflection", 0));
-        depthEdit->setText(QApplication::translate("RayTracerClass", "1", 0));
+        depthEdit->setText(QApplication::translate("RayTracerClass", "2", 0));
         label_6->setText(QApplication::translate("RayTracerClass", "Depth", 0));
+        menuFile->setTitle(QApplication::translate("RayTracerClass", "File", 0));
     } // retranslateUi
 
 };

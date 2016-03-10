@@ -24,6 +24,7 @@ public slots:
 	void renderScene(); 
 	void drawShadowSet();
 	void drawReflectSet();
+	void loadScene();
 
 protected:
 	void keyPressEvent(QKeyEvent *e);

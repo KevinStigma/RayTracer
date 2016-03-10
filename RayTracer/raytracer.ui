@@ -232,7 +232,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>1</string>
+     <string>2</string>
     </property>
    </widget>
    <widget class="QLabel" name="label_6">
@@ -261,9 +261,16 @@
      <x>0</x>
      <y>0</y>
      <width>1026</width>
-     <height>23</height>
+     <height>26</height>
     </rect>
    </property>
+   <widget class="QMenu" name="menuFile">
+    <property name="title">
+     <string>File</string>
+    </property>
+    <addaction name="actionLoad_Scene"/>
+   </widget>
+   <addaction name="menuFile"/>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
    <attribute name="toolBarArea">
@@ -274,6 +281,11 @@
    </attribute>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
+  <action name="actionLoad_Scene">
+   <property name="text">
+    <string>Load Scene</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <resources>
