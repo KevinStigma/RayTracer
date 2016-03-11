@@ -94,9 +94,9 @@ void RayTracer::initObjects()
 #else
 	m_objects.resize(2);
 
-	//Vec3 triangle_pt[3]={Vec3(1.5,4,-5),Vec3(-0.5,-1,-5),Vec3(5.5,-1,-5)};
+	//Vec3 triangle_pt[3]={Vec3(1.5,4,-100),Vec3(-0.5,-1,-100),Vec3(5.5,-1,-100)};
 	//m_objects[0]=new zyk::Triangle(triangle_pt);
-	m_objects[0]=new zyk::Sphere(Vec3(-2.2,0,-5),2);
+	m_objects[0]=new zyk::Sphere(Vec3(-2.0,0,-5),2);
 	m_objects[0]->setMaterial(&g_pGlobalSys->m_materials[2]);
 	
 	m_objects[1]=new zyk::Sphere(Vec3(0,0,1),1.5);
@@ -289,6 +289,9 @@ Vec4 RayTracer::castRayShading(const Vec3& origin,const Vec3& ray_dir,int depth,
 	else
 	{
 		float rei[2]={input_rei,m_objects[near_obj_id]->getMaterial()->rei};
+		if(FCMP(rei[0],rei[1])&&rei[0]>1.0f)// the ray is leaving out the dielectric
+			rei[1]=1.0f;
+
 		Vec3 refra_dir;
 		float ref_weight,refra_weight;
 		bool is_refract=refractRay(inter_pt,ray_dir,inter_nor,rei,refra_dir,ref_weight);
@@ -327,7 +330,7 @@ void RayTracer::rayTracing(zyk::UCHAR3*buffer)
 		for(int j=0;j<v_cam.viewport_width;j++)
 		{	
 #ifdef ZDEBUG
-			int test_x=217,test_y=274;
+			int test_x=432,test_y=304;
 			if(j==test_x&&i==test_y)
 				int z=0;
 #endif

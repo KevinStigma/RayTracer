@@ -1,4 +1,4 @@
-﻿生成启动时间为 2016/3/10 17:53:02。
+﻿生成启动时间为 2016/3/11 10:46:34。
      1>项目“G:\My Documents\Visual Studio 2010\Projects\RayTracer\RayTracer\RayTracer.vcxproj”在节点 2 上(build 个目标)。
      1>InitializeBuildStatus:
          正在创建“Release\RayTracer.unsuccessfulbuild”，因为已指定“AlwaysCreate”。
@@ -31,4 +31,4 @@
 
 生成成功。
 
-已用时间 00:00:03.37
+已用时间 00:00:03.49
