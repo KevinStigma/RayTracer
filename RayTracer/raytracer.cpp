@@ -96,7 +96,7 @@ void RayTracer::initObjects()
 
 	//Vec3 triangle_pt[3]={Vec3(1.5,4,-100),Vec3(-0.5,-1,-100),Vec3(5.5,-1,-100)};
 	//m_objects[0]=new zyk::Triangle(triangle_pt);
-	m_objects[0]=new zyk::Sphere(Vec3(-2.0,0,-5),2);
+	m_objects[0]=new zyk::Sphere(Vec3(-2.2,0,-5),2);
 	m_objects[0]->setMaterial(&g_pGlobalSys->m_materials[2]);
 	
 	m_objects[1]=new zyk::Sphere(Vec3(0,0,1),1.5);
