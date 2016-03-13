@@ -261,7 +261,7 @@
      <x>0</x>
      <y>0</y>
      <width>1026</width>
-     <height>26</height>
+     <height>23</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -270,7 +270,15 @@
     </property>
     <addaction name="actionLoad_Scene"/>
    </widget>
+   <widget class="QMenu" name="menuRender_Type">
+    <property name="title">
+     <string>Render Type</string>
+    </property>
+    <addaction name="actionGeneral_RayTracing"/>
+    <addaction name="actionMC_PathTracing"/>
+   </widget>
    <addaction name="menuFile"/>
+   <addaction name="menuRender_Type"/>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
    <attribute name="toolBarArea">
@@ -284,6 +292,28 @@
   <action name="actionLoad_Scene">
    <property name="text">
     <string>Load Scene</string>
+   </property>
+  </action>
+  <action name="actionGeneral_RayTracing">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>General RayTracing</string>
+   </property>
+  </action>
+  <action name="actionMC_PathTracing">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>MC PathTracing</string>
    </property>
   </action>
  </widget>

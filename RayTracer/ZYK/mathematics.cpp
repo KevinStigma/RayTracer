@@ -106,4 +106,41 @@ namespace zyk
 			return true;
 		return false;
 	}
+
+	float calCocovariance(const MatrixXf&pMat,const std::vector<float>&pAvg,int x_id,int y_id)
+	{
+		int num=pMat.rows();
+		float s=0;
+		for(int i=0;i<num;i++)
+			s+=(pMat(i,x_id)-pAvg[x_id])*(pMat(i,y_id)-pAvg[y_id]);
+		s/=(num-1);
+		return s;
+	}
+
+	void PCAfor3D(const float pData[],int dataNum,Vec3& eigenValues,Mat3& eigenVector)
+	{
+		static const int dimension=3;
+		MatrixXf data_mat(dataNum,3);
+		for(int i=0;i<dataNum;i++)
+		{
+			for(int j=0;j<dimension;j++)
+				data_mat(i,j)=pData[i*3+j];
+		}
+		std::vector<float> avg(dimension);
+		for(int i=0;i<dimension;i++)
+			avg[i]=(data_mat.col(i).sum())/((float)dataNum);
+		
+		Mat3 covMatrix;
+		for(int i=0;i<dimension;i++)
+			for(int j=0;j<dimension;j++)
+				covMatrix(i,j)=calCocovariance(data_mat,avg,i,j);
+
+		EigenSolver<Mat3>es(covMatrix);
+		for(int i=0;i<3;i++)
+		{
+			eigenValues(i)=es.eigenvalues()[i].real();
+			for(int j=0;j<3;j++)
+				eigenVector(i,j)=es.eigenvectors().col(j)(i).real();
+		}
+	}
 }

@@ -1,5 +1,6 @@
 #include "Objects.h"
 #include "mathematics.h"
+#include "glm.h"
 
 namespace zyk
 {
@@ -144,6 +145,22 @@ namespace zyk
 		m_center/=mModel->numvertices;
 		calVertNormal(1);
 		return true;
+	}
+
+	void TriMesh::calLocalCoord()
+	{
+		if(!mModel||mModel->numvertices==0)
+			return;
+		Vec3 eigenValues;
+		Mat3 eigenVectors;
+		PCAfor3D(mModel->vertices+3,mModel->numvertices,eigenValues,eigenVectors);
+		for(int i=0;i<2;i++)
+		{
+			m_local_coord[i]=eigenVectors.col(i);
+			m_local_coord[i].normalize();
+		}
+		m_local_coord[2]=m_local_coord[0].cross(m_local_coord[1]);
+		m_local_coord[1]=m_local_coord[0].cross(m_local_coord[2]);
 	}
 
 	void TriMesh::calVertNormal(int status)

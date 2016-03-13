@@ -11,6 +11,7 @@ namespace zyk
 {
 	class Object;
 };
+enum RenderType{GENERAL_RAY_TRACING,MC_PATH_TRACING};
 
 class RayTracer : public QMainWindow
 {
@@ -25,6 +26,8 @@ public slots:
 	void drawShadowSet();
 	void drawReflectSet();
 	void loadScene();
+	void setGeneRayTracing();
+	void setMCPathTracing();
 
 protected:
 	void keyPressEvent(QKeyEvent *e);
@@ -53,6 +56,7 @@ private:
 	zyk::UCHAR3* render_buffer;  
 	QImage viewport_image;
 	std::vector<zyk::Object*> m_objects;
+	RenderType m_render_type;
 	bool draw_shadow,draw_reflect;
 	int mMax_depth;
 };

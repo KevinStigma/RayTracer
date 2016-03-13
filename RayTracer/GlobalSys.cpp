@@ -1,4 +1,5 @@
 #include "GlobalSys.h"
+#include "zyk/glm.h"
 
 CGlobalSys *g_pGlobalSys = NULL;
 CGlobalSys::CGlobalSys():mLights(NULL),mLightNum(2)
@@ -158,4 +159,11 @@ void CGlobalSys::init_Material()
 	m_materials[index].rs=Vec4(0.0f,0.0f,0.0f,1.0f);
 	m_materials[index].is_solid=false;
 	m_materials[index].rei=1.157f;
+}
+
+void CGlobalSys::generateAreaLights(const GLMmodel*pTri_mesh)
+{
+	if(!pTri_mesh)
+		return;
+
 }

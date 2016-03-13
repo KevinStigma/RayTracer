@@ -5,11 +5,13 @@
 
 #define MAX_MATERIAL 10
 
+struct GLMmodel; 
 class CGlobalSys
 {
 public:
 	CGlobalSys();
 	~CGlobalSys();
+	void generateAreaLights(const GLMmodel*pTri_mesh);
 	void init_Light();
 	void init_Material();
 

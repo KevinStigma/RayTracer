@@ -65,7 +65,7 @@ typedef struct _GLMgroup {
 
 /* GLMmodel: Structure that defines a model.
  */
-typedef struct {
+struct GLMmodel{
   char*    pathname;      /* path to this model */
   char*    mtllibname;      /* name of the material library */
 
@@ -92,7 +92,7 @@ typedef struct {
 
   GLfloat position[3];      /* position of the model */
 
-} GLMmodel;
+};
 
 
 extern "C" {

@@ -11,7 +11,7 @@
 
 RayTracer::RayTracer(QWidget *parent)
 	: QMainWindow(parent),render_buffer(NULL),viewport_image(g_pGlobalSys->viewport_width,g_pGlobalSys->viewport_height,QImage::Format_RGB888),
-	draw_shadow(false),draw_reflect(true),mMax_depth(2)
+	draw_shadow(false),draw_reflect(true),mMax_depth(2),m_render_type(GENERAL_RAY_TRACING)
 {
 	ui.setupUi(this);
 	setFixedSize(1026,703);
@@ -19,6 +19,8 @@ RayTracer::RayTracer(QWidget *parent)
 	connect(ui.drawShadowCheck,SIGNAL(clicked()),this,SLOT(drawShadowSet()));
 	connect(ui.drawReflectCheck,SIGNAL(clicked()),this,SLOT(drawReflectSet()));
 	connect(ui.actionLoad_Scene,SIGNAL(triggered()),this,SLOT(loadScene()));
+	connect(ui.actionGeneral_RayTracing,SIGNAL(triggered()),this,SLOT(setGeneRayTracing()));
+	connect(ui.actionMC_PathTracing,SIGNAL(triggered()),this,SLOT(setMCPathTracing()));
 
 	ui.render_label->setFixedSize(g_pGlobalSys->viewport_width,g_pGlobalSys->viewport_height);
 	render_buffer=new zyk::UCHAR3[g_pGlobalSys->pixel_num];
@@ -35,6 +37,23 @@ RayTracer::~RayTracer()
 		 SAFE_DELETE(m_objects[i]);
 	 }
 }
+
+void RayTracer::setGeneRayTracing()
+{
+	ui.actionGeneral_RayTracing->setChecked(true);
+	ui.actionMC_PathTracing->setChecked(false);
+	m_render_type=GENERAL_RAY_TRACING;
+	std::cout<<"Render Type:General Ray Tracing"<<std::endl;
+}
+
+void RayTracer::setMCPathTracing()
+{
+	ui.actionGeneral_RayTracing->setChecked(false);
+	ui.actionMC_PathTracing->setChecked(true);
+	m_render_type=MC_PATH_TRACING;
+	std::cout<<"Render Type:Monte Carlo Path Tracing"<<std::endl;
+}
+
 
 #define RECORD_TIME
 void RayTracer::renderScene()
@@ -82,28 +101,14 @@ void RayTracer::initRenderBuffer(zyk::UCHAR3*buffer)
 void RayTracer::initObjects()
 {
 #ifndef REFRAC_TEST
-	m_objects.resize(3);
-	m_objects[0]=new zyk::Sphere(Vec3(0,0,-5),2);
-	m_objects[0]->setMaterial(&g_pGlobalSys->m_materials[1]);
-
-	m_objects[1]=new zyk::Sphere(Vec3(0,5,-5),1.5);
-	m_objects[1]->setMaterial(&g_pGlobalSys->m_materials[2]);
-
-	m_objects[2]=new zyk::Sphere(Vec3(5.5,0,-5),1.5);
-	m_objects[2]->setMaterial(&g_pGlobalSys->m_materials[0]);
-#else
 	m_objects.resize(2);
 
-	//Vec3 triangle_pt[3]={Vec3(1.5,4,-100),Vec3(-0.5,-1,-100),Vec3(5.5,-1,-100)};
-	//m_objects[0]=new zyk::Triangle(triangle_pt);
 	m_objects[0]=new zyk::Sphere(Vec3(-2.2,0,-5),2);
 	m_objects[0]->setMaterial(&g_pGlobalSys->m_materials[2]);
-	
+
 	m_objects[1]=new zyk::Sphere(Vec3(0,0,1),1.5);
 	m_objects[1]->setMaterial(&g_pGlobalSys->m_materials[6]);
-	
-	//m_objects[1]=new zyk::Sphere(Vec3(2,-1,-2),2);
-	//m_objects[1]->setMaterial(&g_pGlobalSys->m_materials[6]);
+#else
 
 #endif
 }
@@ -335,7 +340,11 @@ void RayTracer::rayTracing(zyk::UCHAR3*buffer)
 				int z=0;
 #endif
 			Vec3 ray_dir=rayCasting(v_cam,j,i);
-			Vec4 shade_color=castRayShading(v_cam.pos,ray_dir,0);
+			Vec4 shade_color;
+			if(m_render_type==GENERAL_RAY_TRACING)
+				shade_color=castRayShading(v_cam.pos,ray_dir,0);
+			else if(m_render_type==MC_PATH_TRACING)
+				shade_color=Vec4(0,0,0,1);
 			fillColor(shade_color,buffer[row_ind+j]);
 		}
 	}

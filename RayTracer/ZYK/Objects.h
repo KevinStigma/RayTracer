@@ -7,8 +7,8 @@
 #ifndef OBJECTS_H
 #define OBJECTS_H
 #include "Data_structure.h"
-#include "glm.h"
 
+struct GLMmodel;
 namespace zyk
 {
 	class Object
@@ -56,6 +56,10 @@ namespace zyk
 		void scaleMesh(const Vec3& scale);
 		Vec3 getCenter();
 		void translate(const Vec3& trans);
+		void calLocalCoord();
+		const GLMmodel* getMesh()const{return mModel;}
+		GLMmodel* getMesh(){return mModel;}
+		const Vec3* getLocalCoord()const{return m_local_coord;}
 		virtual bool intersect(const Vec3& origin,const Vec3& dir,float& t,Vec3& normal,Vec3& intersect_pt)const;
 		virtual bool intersect(const Vec3& origin,const Vec3& dir,float& t)const;
 	protected:
@@ -63,8 +67,8 @@ namespace zyk
 	private:
 		GLMmodel* mModel;
 		Vec3 m_center;
+		Vec3 m_local_coord[3];
 	};
-
 
 	class Triangle:public Object
 	{
