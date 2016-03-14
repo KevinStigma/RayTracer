@@ -147,13 +147,15 @@ namespace zyk
 		return true;
 	}
 
-	void TriMesh::calLocalCoord()
+	void TriMesh::calBoundingBox()
 	{
 		if(!mModel||mModel->numvertices==0)
 			return;
+		//using Principle Component Analysis to get the local coordinate of the mesh
 		Vec3 eigenValues;
 		Mat3 eigenVectors;
 		PCAfor3D(mModel->vertices+3,mModel->numvertices,eigenValues,eigenVectors);
+		Vec3 m_local_coord[3];
 		for(int i=0;i<2;i++)
 		{
 			m_local_coord[i]=eigenVectors.col(i);
@@ -161,6 +163,44 @@ namespace zyk
 		}
 		m_local_coord[2]=m_local_coord[0].cross(m_local_coord[1]);
 		m_local_coord[1]=m_local_coord[0].cross(m_local_coord[2]);
+		for(int i=0;i<2;i++)
+			m_aabb.local_coord[i]=m_local_coord[i];
+
+		//we then compute the length of mesh in each local coordinate
+		float local_xmin,local_xmax,local_ymax,local_ymin,local_zmax,local_zmin;
+		Mat3 trans_mat;
+		for(int i=0;i<3;i++)
+		{
+			trans_mat(0,i)=m_local_coord[i](0);
+			trans_mat(1,i)=m_local_coord[i](1);
+			trans_mat(2,i)=m_local_coord[i](2);
+		}
+		trans_mat=trans_mat.inverse();
+
+		Vec3 trans_pt=trans_mat*Vec3(mModel->vertices[3],mModel->vertices[4],mModel->vertices[5]);
+		local_xmin=local_xmax=trans_pt(0);
+		local_ymin=local_ymax=trans_pt(1);
+		local_zmin=local_zmax=trans_pt(2);
+		for(int i=2;i<=mModel->numvertices;i++)
+		{
+			int index=i*3;
+			trans_pt=trans_mat*Vec3(mModel->vertices[index],
+				mModel->vertices[index+1],mModel->vertices[index+2]);
+			local_xmin=std::min(local_xmin,trans_pt(0));
+			local_ymin=std::min(local_ymin,trans_pt(1));
+			local_zmin=std::min(local_zmin,trans_pt(2));
+
+			local_xmax=std::max(local_xmax,trans_pt(0));
+			local_ymax=std::max(local_ymax,trans_pt(1));
+			local_zmax=std::max(local_zmax,trans_pt(2));
+		}
+		m_aabb.XL=(local_xmax-local_xmin)*0.5f;
+		m_aabb.YL=(local_ymax-local_ymin)*0.5f;
+		m_aabb.ZL=(local_zmax-local_zmin)*0.5f;
+
+		trans_mat=trans_mat.inverse();
+		m_aabb.bot_pos=trans_mat*Vec3(local_xmin,local_ymin,local_zmin);
+		m_aabb.top_pos=trans_mat*Vec3(local_xmax,local_ymax,local_zmax);
 	}
 
 	void TriMesh::calVertNormal(int status)

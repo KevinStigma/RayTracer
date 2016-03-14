@@ -47,6 +47,20 @@ namespace zyk
 		Vec3 n;
 	};
 
+	struct BoundingBox
+	{
+		Vec3 bot_pos;
+		Vec3 top_pos;
+		float XL,YL,ZL;
+		Vec3 local_coord[3];
+		BoundingBox(Vec3 b_pos=Vec3(0,0,0),Vec3 t_pos=Vec3(0,0,0)):bot_pos(b_pos),top_pos(t_pos)
+		{
+			XL=top_pos(0)-bot_pos(0);
+			YL=top_pos(1)-bot_pos(1);
+			ZL=top_pos(2)-bot_pos(2);
+		}
+	};
+
 	class TriMesh:public Object
 	{
 	public:
@@ -56,10 +70,10 @@ namespace zyk
 		void scaleMesh(const Vec3& scale);
 		Vec3 getCenter();
 		void translate(const Vec3& trans);
-		void calLocalCoord();
+		void calBoundingBox();
 		const GLMmodel* getMesh()const{return mModel;}
 		GLMmodel* getMesh(){return mModel;}
-		const Vec3* getLocalCoord()const{return m_local_coord;}
+		const BoundingBox* getAABB()const{return &m_aabb;}
 		virtual bool intersect(const Vec3& origin,const Vec3& dir,float& t,Vec3& normal,Vec3& intersect_pt)const;
 		virtual bool intersect(const Vec3& origin,const Vec3& dir,float& t)const;
 	protected:
@@ -67,7 +81,7 @@ namespace zyk
 	private:
 		GLMmodel* mModel;
 		Vec3 m_center;
-		Vec3 m_local_coord[3];
+		BoundingBox m_aabb;
 	};
 
 	class Triangle:public Object

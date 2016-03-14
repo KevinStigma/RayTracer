@@ -1,5 +1,6 @@
 #include "GlobalSys.h"
-#include "zyk/glm.h"
+#include "zyk/Objects.h"
+#include <algorithm>
 
 CGlobalSys *g_pGlobalSys = NULL;
 CGlobalSys::CGlobalSys():mLights(NULL),mLightNum(2)
@@ -161,9 +162,15 @@ void CGlobalSys::init_Material()
 	m_materials[index].rei=1.157f;
 }
 
-void CGlobalSys::generateAreaLights(const GLMmodel*pTri_mesh)
+void CGlobalSys::generateAreaLights(zyk::TriMesh*pTri_mesh)
 {
-	if(!pTri_mesh)
+	if(!pTri_mesh||!pTri_mesh->getMesh())
 		return;
+	pTri_mesh->calBoundingBox();
+	const zyk::BoundingBox* aabb=pTri_mesh->getAABB();
+	float coord_length[3]={aabb->XL,aabb->YL,aabb->ZL};
+	int index_list[3]={1,2,3};
+	std::sort(index_list,index_list+3,[coord_length]
+	(const int&a,const int&b){return coord_length[a]>coord_length[b];});
 
 }

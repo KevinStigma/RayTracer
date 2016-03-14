@@ -5,13 +5,17 @@
 
 #define MAX_MATERIAL 10
 
-struct GLMmodel; 
+namespace zyk
+{
+	class TriMesh; 
+};
+
 class CGlobalSys
 {
 public:
 	CGlobalSys();
 	~CGlobalSys();
-	void generateAreaLights(const GLMmodel*pTri_mesh);
+	void generateAreaLights(zyk::TriMesh*pTri_mesh);
 	void init_Light();
 	void init_Material();
 

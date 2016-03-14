@@ -1,34 +1,10 @@
-﻿生成启动时间为 2016/3/13 19:41:00。
-     1>项目“G:\My Documents\Visual Studio 2010\Projects\RayTracer\RayTracer\RayTracer.vcxproj”在节点 2 上(build 个目标)。
-     1>InitializeBuildStatus:
-         正在创建“Release\RayTracer.unsuccessfulbuild”，因为已指定“AlwaysCreate”。
-       CustomBuild:
-         所有输出均为最新。
-       ClCompile:
-         所有输出均为最新。
-         G:\VS2010\VC\bin\CL.exe /c /I.\GeneratedFiles /I. /IG:\QT5.20\5.2.0\msvc2010_opengl\include /I.\GeneratedFiles\Release /IG:\QT5.20\5.2.0\msvc2010_opengl\include\QtCore /IG:\QT5.20\5.2.0\msvc2010_opengl\include\QtGui /IG:\QT5.20\5.2.0\msvc2010_opengl\include\QtOpenGL /IG:\QT5.20\5.2.0\msvc2010_opengl\include\QtWidgets /nologo /W1 /WX- /O2 /Oy- /D UNICODE /D WIN32 /D WIN64 /D QT_DLL /D QT_NO_DEBUG /D NDEBUG /D QT_CORE_LIB /D QT_GUI_LIB /D QT_OPENGL_LIB /D QT_WIDGETS_LIB /Gm- /EHsc /MD /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Release\\" /Fd"Release\vc100.pdb" /Gd /TP /analyze- /errorReport:prompt raytracer.cpp
-         raytracer.cpp
-       Link:
-         G:\VS2010\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"G:\My Documents\Visual Studio 2010\Projects\RayTracer\Win32\Release\\RayTracer.exe" /NOLOGO /LIBPATH:G:\QT5.20\5.2.0\msvc2010_opengl\lib qtmain.lib Qt5Core.lib Qt5Gui.lib Qt5OpenGL.lib opengl32.lib glu32.lib Qt5Widgets.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /ManifestFile:"Release\RayTracer.exe.intermediate.manifest" /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /PDB:"G:\My Documents\Visual Studio 2010\Projects\RayTracer\Win32\Release\RayTracer.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"G:\My Documents\Visual Studio 2010\Projects\RayTracer\Win32\Release\RayTracer.lib" /MACHINE:X86 Release\qrc_raytracer.obj
-         Release\moc_raytracer.obj
-         Release\GlobalSys.obj
-         Release\main.obj
-         Release\raytracer.obj
-         Release\CPARSERV1.obj
-         Release\Data_structure.obj
-         Release\glm.obj
-         Release\Image.obj
-         Release\mathematics.obj
-         Release\mesh_loader.obj
-         Release\Objects.obj
-         RayTracer.vcxproj -> G:\My Documents\Visual Studio 2010\Projects\RayTracer\Win32\Release\RayTracer.exe
-       Manifest:
-         C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\bin\mt.exe /nologo /verbose /outputresource:"G:\My Documents\Visual Studio 2010\Projects\RayTracer\Win32\Release\\RayTracer.exe;#1" /manifest Release\RayTracer.exe.intermediate.manifest
-       FinalizeBuildStatus:
-         正在删除文件“Release\RayTracer.unsuccessfulbuild”。
-         正在对“Release\RayTracer.lastbuildstate”执行 Touch 任务。
-     1>已完成生成项目“G:\My Documents\Visual Studio 2010\Projects\RayTracer\RayTracer\RayTracer.vcxproj”(build 个目标)的操作。
+﻿生成启动时间为 2016/3/13 20:53:49。
+     1>项目“G:\My Documents\Visual Studio 2010\Projects\RayTracer\RayTracer\RayTracer.vcxproj”在节点 2 上(ClCompile 个目标)。
+     1>ClCompile:
+         G:\VS2010\VC\bin\CL.exe /c /I.\GeneratedFiles /I. /IG:\QT5.20\5.2.0\msvc2010_opengl\include /I.\GeneratedFiles\Release /IG:\QT5.20\5.2.0\msvc2010_opengl\include\QtCore /IG:\QT5.20\5.2.0\msvc2010_opengl\include\QtGui /IG:\QT5.20\5.2.0\msvc2010_opengl\include\QtOpenGL /IG:\QT5.20\5.2.0\msvc2010_opengl\include\QtWidgets /nologo /W1 /WX- /O2 /Oy- /D UNICODE /D WIN32 /D WIN64 /D QT_DLL /D QT_NO_DEBUG /D NDEBUG /D QT_CORE_LIB /D QT_GUI_LIB /D QT_OPENGL_LIB /D QT_WIDGETS_LIB /Gm- /EHsc /MD /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Release\\" /Fd"Release\vc100.pdb" /Gd /TP /analyze- /errorReport:prompt GlobalSys.cpp
+         GlobalSys.cpp
+     1>已完成生成项目“G:\My Documents\Visual Studio 2010\Projects\RayTracer\RayTracer\RayTracer.vcxproj”(ClCompile 个目标)的操作。
 
 生成成功。
 
-已用时间 00:00:03.51
+已用时间 00:00:01.66
