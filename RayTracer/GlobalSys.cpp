@@ -166,39 +166,45 @@ void CGlobalSys::generateAreaLights(zyk::TriMesh*pTri_mesh)
 {
 	if(!pTri_mesh||!pTri_mesh->getMesh())
 		return;
-	pTri_mesh->calBoundingBox();
-	const zyk::BoundingBox* aabb=pTri_mesh->getAABB();
-	float coord_length[3]={aabb->XL,aabb->YL,aabb->ZL};
+	pTri_mesh->calOBB();
+	const zyk::OBB* obb=pTri_mesh->getOBB();
+	if(!obb)
+	{
+		std::cout<<"You must calculate the mesh's bounding box first!"<<std::endl;
+		return;
+	}
+
+	float coord_length[3]={obb->XL,obb->YL,obb->ZL};
 	int index_list[3]={0,1,2};
 	//I don't know why this is false when I cancel the symbom '&' in the lambda function
 	std::sort(index_list,index_list+3,[&coord_length](const int&a,const int&b)->int{return coord_length[a]>coord_length[b];});
 
-	int division=5;
+	int division=5,grid_num=division*division;
 	float grid_span[3];
 	for(int i=0;i<3;i++)
 	{
 		if(i!=2)
 			grid_span[i]=coord_length[index_list[i]]*2.0f/division;
+		else
+			grid_span[i]=coord_length[index_list[i]];
 	}
 	
+	//copy the backup lights info into new array
 	zyk::Light_Ptr light_backup=mLights;
-	if(!light_backup)
-		mLights=new zyk::Light[division*division];
-	else
-		mLights=new zyk::Light[mLightNum+division*division];
-	mLightNum+=division*division;
-
-	int start_ind=mLightNum;
+	mLights=new zyk::Light[mLightNum+grid_num];
 	for(int i=0;i<mLightNum;i++)
 		mLights[i]=light_backup[i];
 	SAFE_DELETE_ARRAY(light_backup);
 
+	mLightNum+=grid_num;
+	int start_ind=mLightNum;
+
 	for(int i=0;i<division;i++)
 		for(int j=0;j<division;j++)
 		{
-			Vec3 position=aabb->bot_pos+aabb->local_coord[index_list[2]]*grid_span[index_list[2]]+
-				(i*2+1)*aabb->local_coord[index_list[0]]*grid_span[index_list[0]]+
-				(j*2+1)*aabb->local_coord[index_list[1]]*grid_span[index_list[1]];
+			Vec3 position=obb->bot_pos+obb->local_coord[index_list[2]]*grid_span[2]+
+				(i*2+1)*obb->local_coord[index_list[0]]*grid_span[0]+
+				(j*2+1)*obb->local_coord[index_list[1]]*grid_span[1];
 			mLights[start_ind+i*division+j].c_ambient=Vec4::Ones();
 			mLights[start_ind+i*division+j].c_diffuse=Vec4::Ones();
 			mLights[start_ind+i*division+j].c_specular=Vec4::Ones();

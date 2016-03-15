@@ -70,14 +70,17 @@ namespace zyk
 
 	bool Plane3D::intersect(const Vec3& origin,const Vec3& dir,float& t)const
 	{
-		t=-(origin.dot(n)+d)/dir.dot(n);
+		float tmp=dir.dot(n);
+		if(FCMP(tmp,0))
+			return false;
+		t=-(origin.dot(n)+d)/tmp;
 		if(t>0)
 			return true;
 		else 
 			return false;
 	}
 
-	TriMesh::TriMesh(const std::string& name):mModel(NULL)
+	TriMesh::TriMesh(const std::string& name):mModel(NULL),m_aabb(NULL),m_obb(NULL)
 	{
 		if(!importMesh(name))
 			mModel=NULL;
@@ -147,9 +150,11 @@ namespace zyk
 		return true;
 	}
 
-	void TriMesh::calBoundingBox()
+	void TriMesh::calOBB()
 	{
 		if(!mModel||mModel->numvertices==0)
+			return;
+		if(m_obb)
 			return;
 		//using Principle Component Analysis to get the local coordinate of the mesh
 		Vec3 eigenValues;
@@ -163,8 +168,9 @@ namespace zyk
 		}
 		m_local_coord[2]=m_local_coord[0].cross(m_local_coord[1]);
 		m_local_coord[1]=m_local_coord[0].cross(m_local_coord[2]);
+		m_obb=new OBB;
 		for(int i=0;i<2;i++)
-			m_aabb.local_coord[i]=m_local_coord[i];
+			m_obb->local_coord[i]=m_local_coord[i];
 
 		//we then compute the length of mesh in each local coordinate
 		float local_xmin,local_xmax,local_ymax,local_ymin,local_zmax,local_zmin;
@@ -194,13 +200,43 @@ namespace zyk
 			local_ymax=std::max(local_ymax,trans_pt(1));
 			local_zmax=std::max(local_zmax,trans_pt(2));
 		}
-		m_aabb.XL=(local_xmax-local_xmin)*0.5f;
-		m_aabb.YL=(local_ymax-local_ymin)*0.5f;
-		m_aabb.ZL=(local_zmax-local_zmin)*0.5f;
+		m_obb->XL=(local_xmax-local_xmin)*0.5f;
+		m_obb->YL=(local_ymax-local_ymin)*0.5f;
+		m_obb->ZL=(local_zmax-local_zmin)*0.5f;
 
 		trans_mat=trans_mat.inverse();
-		m_aabb.bot_pos=trans_mat*Vec3(local_xmin,local_ymin,local_zmin);
-		m_aabb.top_pos=trans_mat*Vec3(local_xmax,local_ymax,local_zmax);
+		m_obb->bot_pos=trans_mat*Vec3(local_xmin,local_ymin,local_zmin);
+		m_obb->top_pos=trans_mat*Vec3(local_xmax,local_ymax,local_zmax);
+	}
+
+	void TriMesh::calAABB()
+	{
+		if(!mModel||mModel->numvertices==0)
+			return;
+		if(m_aabb)
+			return;
+		m_aabb=new AABB;
+
+		float xmin,xmax,ymax,ymin,zmax,zmin;
+		xmin=xmax=mModel->vertices[3];
+		ymin=ymax=mModel->vertices[4];
+		zmin=zmax=mModel->vertices[5];
+		for(int i=2;i<=mModel->numvertices;i++)
+		{
+			int index=i*3;
+			Vec3 point(mModel->vertices[index],mModel->vertices[index+1],mModel->vertices[index+2]);
+			xmin=std::min(xmin,point(0));
+			xmax=std::max(xmax,point(0));
+			ymin=std::min(ymin,point(1));
+			ymax=std::max(ymax,point(1));
+			zmin=std::min(zmin,point(2));
+			zmax=std::max(zmax,point(2));
+		}
+		m_aabb->XL=(xmax-xmin)*0.5f;
+		m_aabb->YL=(ymax-ymin)*0.5f;
+		m_aabb->ZL=(zmax-zmin)*0.5f;
+		m_aabb->bot_pos=Vec3(xmin,ymin,zmin);
+		m_aabb->top_pos=Vec3(xmax,ymax,zmax);
 	}
 
 	void TriMesh::calVertNormal(int status)
@@ -287,6 +323,8 @@ namespace zyk
 			glmDelete( mModel );
 			mModel = NULL;
 		}
+		SAFE_DELETE(m_aabb);
+		SAFE_DELETE(m_obb);
 	}
 
 	Triangle::Triangle(Vec3 triangle_pt[])
@@ -322,5 +360,62 @@ namespace zyk
 	{
 		for(int i=0;i<3;i++)
 			tri_pt[i]=triangle_pt[i];
+	}
+
+	struct CandidatePlane// this data structure is only used for AABB::intersectCheck
+	{
+		Plane3D* plane;
+		float t;
+		CandidatePlane(Plane3D*p=NULL,float t1=0):plane(p),t(t1){}
+	};
+
+	inline bool AABB::inBox(const Vec3&point)const
+	{
+		if(point(0)>=bot_pos(0)&&point(0)<=top_pos(0)&&
+			point(1)>=bot_pos(1)&&point(1)<=top_pos(1)&&
+			point(2)>=bot_pos(2)&&point(2)<=top_pos(2))
+			return true;
+		return false;
+	}
+
+	bool AABB::intersectCheck(const Vec3& origin,const Vec3& dir,float& t)const
+	{
+		static Plane3D planes[6]={Plane3D(Vec3(1,0,0),top_pos),Plane3D(Vec3(1,0,0),bot_pos),
+			Plane3D(Vec3(0,1,0),top_pos),Plane3D(Vec3(0,1,0),bot_pos),
+			Plane3D(Vec3(0,0,1),top_pos),Plane3D(Vec3(0,0,1),bot_pos)};
+
+		std::vector<CandidatePlane> near_plane;
+
+		//select the candidate planes
+		for(int i=0;i<3;i++)
+		{	
+			float t1,t2;
+			bool is1=planes[i*2].intersect(origin,dir,t1);
+			bool is2=planes[i*2+1].intersect(origin,dir,t2);
+			if((is1&&!is2)||(is1&&is2&&t1<t2))
+				near_plane.push_back(CandidatePlane(&planes[i*2],t1));
+			else if((!is1&&is2)||((is1&&is2&&!(t1<t2))))
+				near_plane.push_back(CandidatePlane(&planes[i*2+1],t2));
+		}
+		if(near_plane.size()==0)
+		{
+			t=0;
+			return false;
+		}
+
+		std::sort(near_plane.begin(),near_plane.end(),
+			[](const CandidatePlane&a,const CandidatePlane&b){return a.t>b.t;});
+		//find the farthest to the ray origin in candidate planes
+		for(int i=0;i<(int)near_plane.size();i++)
+		{
+			Vec3 inter_pt=origin+dir*near_plane[i].t;
+			//we must guarantee that the intersect point is in the field of AABB
+			if(inBox(inter_pt))
+			{
+				t=near_plane[i].t;
+				return true;
+			}
+		}
+		return false;
 	}
 };

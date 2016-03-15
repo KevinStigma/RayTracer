@@ -43,23 +43,39 @@ namespace zyk
 		void setPlan3D(const Vec3& pNormal,const Vec3 &pPoint);
 		virtual bool intersect(const Vec3& origin,const Vec3& dir,float& t,Vec3& normal,Vec3& intersect_pt)const;
 		virtual bool intersect(const Vec3& origin,const Vec3& dir,float& t)const;
-		float d;
+		float d; // nx+d=0
 		Vec3 n;
 	};
 
-	struct BoundingBox
+	struct OBB
 	{
 		Vec3 bot_pos;
 		Vec3 top_pos;
 		float XL,YL,ZL;
 		Vec3 local_coord[3];
-		BoundingBox(Vec3 b_pos=Vec3(0,0,0),Vec3 t_pos=Vec3(0,0,0)):bot_pos(b_pos),top_pos(t_pos)
+		OBB(Vec3 b_pos=Vec3(0,0,0),Vec3 t_pos=Vec3(0,0,0)):bot_pos(b_pos),top_pos(t_pos)
 		{
 			XL=top_pos(0)-bot_pos(0);
 			YL=top_pos(1)-bot_pos(1);
 			ZL=top_pos(2)-bot_pos(2);
 		}
 	};
+
+	struct AABB
+	{
+		Vec3 bot_pos;
+		Vec3 top_pos;
+		float XL,YL,ZL;
+		inline bool inBox(const Vec3&point)const;
+		AABB(Vec3 b_pos=Vec3(0,0,0),Vec3 t_pos=Vec3(0,0,0)):bot_pos(b_pos),top_pos(t_pos)
+		{
+			XL=top_pos(0)-bot_pos(0);
+			YL=top_pos(1)-bot_pos(1);
+			ZL=top_pos(2)-bot_pos(2);
+		}
+		bool intersectCheck(const Vec3& origin,const Vec3& dir,float& t)const;
+	};
+
 
 	class TriMesh:public Object
 	{
@@ -70,10 +86,12 @@ namespace zyk
 		void scaleMesh(const Vec3& scale);
 		Vec3 getCenter();
 		void translate(const Vec3& trans);
-		void calBoundingBox();
+		void calOBB();
+		void calAABB();
 		const GLMmodel* getMesh()const{return mModel;}
 		GLMmodel* getMesh(){return mModel;}
-		const BoundingBox* getAABB()const{return &m_aabb;}
+		const AABB* getAABB()const{return m_aabb;}
+		const OBB* getOBB()const{return m_obb;}
 		virtual bool intersect(const Vec3& origin,const Vec3& dir,float& t,Vec3& normal,Vec3& intersect_pt)const;
 		virtual bool intersect(const Vec3& origin,const Vec3& dir,float& t)const;
 	protected:
@@ -81,7 +99,8 @@ namespace zyk
 	private:
 		GLMmodel* mModel;
 		Vec3 m_center;
-		BoundingBox m_aabb;
+		AABB* m_aabb;
+		OBB*  m_obb;
 	};
 
 	class Triangle:public Object
