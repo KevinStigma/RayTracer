@@ -73,7 +73,7 @@ namespace zyk
 			YL=top_pos(1)-bot_pos(1);
 			ZL=top_pos(2)-bot_pos(2);
 		}
-		bool intersectCheck(const Vec3& origin,const Vec3& dir,float& t)const;
+		bool intersectCheck(const Vec3& origin,const Vec3& dir)const;
 	};
 
 

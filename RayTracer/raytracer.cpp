@@ -109,7 +109,10 @@ void RayTracer::initObjects()
 	m_objects[1]=new zyk::Sphere(Vec3(0,0,1),1.5);
 	m_objects[1]->setMaterial(&g_pGlobalSys->m_materials[6]);
 #else
-
+	m_objects.resize(1);
+	zyk::TriMesh* tri_mesh=new zyk::TriMesh("../data/Scene/1/lightsource.obj");
+	g_pGlobalSys->generateAreaLights(tri_mesh);
+	m_objects[0]=tri_mesh;
 #endif
 }
 

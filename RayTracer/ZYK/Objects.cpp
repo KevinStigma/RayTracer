@@ -169,28 +169,28 @@ namespace zyk
 		m_local_coord[2]=m_local_coord[0].cross(m_local_coord[1]);
 		m_local_coord[1]=m_local_coord[0].cross(m_local_coord[2]);
 		m_obb=new OBB;
-		for(int i=0;i<2;i++)
+		for(int i=0;i<3;i++)
 			m_obb->local_coord[i]=m_local_coord[i];
 
 		//we then compute the length of mesh in each local coordinate
 		float local_xmin,local_xmax,local_ymax,local_ymin,local_zmax,local_zmin;
-		Mat3 trans_mat;
+		Mat3 trans_mat1;
 		for(int i=0;i<3;i++)
 		{
-			trans_mat(0,i)=m_local_coord[i](0);
-			trans_mat(1,i)=m_local_coord[i](1);
-			trans_mat(2,i)=m_local_coord[i](2);
+			trans_mat1(0,i)=m_local_coord[i](0);
+			trans_mat1(1,i)=m_local_coord[i](1);
+			trans_mat1(2,i)=m_local_coord[i](2);
 		}
-		trans_mat=trans_mat.inverse();
+		Mat3 trans_mat2=trans_mat1.inverse();
 
-		Vec3 trans_pt=trans_mat*Vec3(mModel->vertices[3],mModel->vertices[4],mModel->vertices[5]);
+		Vec3 trans_pt=trans_mat2*Vec3(mModel->vertices[3],mModel->vertices[4],mModel->vertices[5]);
 		local_xmin=local_xmax=trans_pt(0);
 		local_ymin=local_ymax=trans_pt(1);
 		local_zmin=local_zmax=trans_pt(2);
 		for(int i=2;i<=mModel->numvertices;i++)
 		{
 			int index=i*3;
-			trans_pt=trans_mat*Vec3(mModel->vertices[index],
+			trans_pt=trans_mat2*Vec3(mModel->vertices[index],
 				mModel->vertices[index+1],mModel->vertices[index+2]);
 			local_xmin=std::min(local_xmin,trans_pt(0));
 			local_ymin=std::min(local_ymin,trans_pt(1));
@@ -204,9 +204,8 @@ namespace zyk
 		m_obb->YL=(local_ymax-local_ymin)*0.5f;
 		m_obb->ZL=(local_zmax-local_zmin)*0.5f;
 
-		trans_mat=trans_mat.inverse();
-		m_obb->bot_pos=trans_mat*Vec3(local_xmin,local_ymin,local_zmin);
-		m_obb->top_pos=trans_mat*Vec3(local_xmax,local_ymax,local_zmax);
+		m_obb->bot_pos=trans_mat1*Vec3(local_xmin,local_ymin,local_zmin);
+		m_obb->top_pos=trans_mat1*Vec3(local_xmax,local_ymax,local_zmax);
 	}
 
 	void TriMesh::calAABB()
@@ -362,13 +361,6 @@ namespace zyk
 			tri_pt[i]=triangle_pt[i];
 	}
 
-	struct CandidatePlane// this data structure is only used for AABB::intersectCheck
-	{
-		Plane3D* plane;
-		float t;
-		CandidatePlane(Plane3D*p=NULL,float t1=0):plane(p),t(t1){}
-	};
-
 	inline bool AABB::inBox(const Vec3&point)const
 	{
 		if(point(0)>=bot_pos(0)&&point(0)<=top_pos(0)&&
@@ -378,7 +370,14 @@ namespace zyk
 		return false;
 	}
 
-	bool AABB::intersectCheck(const Vec3& origin,const Vec3& dir,float& t)const
+	struct CandidatePlane// this data structure is only used for AABB::intersectCheck
+	{
+		Plane3D* plane;
+		float t;
+		CandidatePlane(Plane3D*p=NULL,float t1=0):plane(p),t(t1){}
+	};
+
+	bool AABB::intersectCheck(const Vec3& origin,const Vec3& dir)const
 	{
 		static Plane3D planes[6]={Plane3D(Vec3(1,0,0),top_pos),Plane3D(Vec3(1,0,0),bot_pos),
 			Plane3D(Vec3(0,1,0),top_pos),Plane3D(Vec3(0,1,0),bot_pos),
@@ -399,7 +398,6 @@ namespace zyk
 		}
 		if(near_plane.size()==0)
 		{
-			t=0;
 			return false;
 		}
 
@@ -411,10 +409,7 @@ namespace zyk
 			Vec3 inter_pt=origin+dir*near_plane[i].t;
 			//we must guarantee that the intersect point is in the field of AABB
 			if(inBox(inter_pt))
-			{
-				t=near_plane[i].t;
 				return true;
-			}
 		}
 		return false;
 	}

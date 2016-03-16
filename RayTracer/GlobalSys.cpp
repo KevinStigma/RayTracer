@@ -184,7 +184,7 @@ void CGlobalSys::generateAreaLights(zyk::TriMesh*pTri_mesh)
 	for(int i=0;i<3;i++)
 	{
 		if(i!=2)
-			grid_span[i]=coord_length[index_list[i]]*2.0f/division;
+			grid_span[i]=coord_length[index_list[i]]/division;
 		else
 			grid_span[i]=coord_length[index_list[i]];
 	}
@@ -196,18 +196,19 @@ void CGlobalSys::generateAreaLights(zyk::TriMesh*pTri_mesh)
 		mLights[i]=light_backup[i];
 	SAFE_DELETE_ARRAY(light_backup);
 
-	mLightNum+=grid_num;
 	int start_ind=mLightNum;
-
 	for(int i=0;i<division;i++)
 		for(int j=0;j<division;j++)
 		{
-			Vec3 position=obb->bot_pos+obb->local_coord[index_list[2]]*grid_span[2]+
-				(i*2+1)*obb->local_coord[index_list[0]]*grid_span[0]+
-				(j*2+1)*obb->local_coord[index_list[1]]*grid_span[1];
+			Vec3 p1=obb->bot_pos;
+			Vec3 vz=obb->local_coord[index_list[2]]*grid_span[2];
+			Vec3 vx=(i*2+1)*obb->local_coord[index_list[0]]*grid_span[0];
+			Vec3 vy=(j*2+1)*obb->local_coord[index_list[1]]*grid_span[1];
+			Vec3 position=p1+vx+vy+vz;
 			mLights[start_ind+i*division+j].c_ambient=Vec4::Ones();
 			mLights[start_ind+i*division+j].c_diffuse=Vec4::Ones();
 			mLights[start_ind+i*division+j].c_specular=Vec4::Ones();
 			mLights[start_ind+i*division+j].pos=position;
 		}
+	mLightNum+=grid_num;
 }
