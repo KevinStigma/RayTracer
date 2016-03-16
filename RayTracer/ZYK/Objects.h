@@ -23,7 +23,7 @@ namespace zyk
 	protected:
 		Material_Ptr m_material;
 	};
-	
+
 	class Sphere:public Object
 	{
 	public:

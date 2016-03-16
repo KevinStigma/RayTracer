@@ -136,4 +136,12 @@ namespace zyk
 		}
 		out.close();
 	}
+
+	Vec3 Light::getLightingDirection(const Vec3& point)const
+	{
+		if(type==DIRECTION_LIGHT)
+			return dir;
+		else if(type==SPOT_LIGHT)
+			return (pos-point).normalized();
+	}
 };

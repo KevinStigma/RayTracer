@@ -30,6 +30,9 @@
 #define CULL_OBJECT_XYZ_PLANE (CULL_OBJECT_X_PLANE|CULL_OBJECT_Y_PLANE\
 								|CULL_OBJECT_Z_PLANE)
 
+#define MEMORY_LEAK_CHECK _CrtSetDbgFlag(_CrtSetDbgFlag(_CRTDBG_REPORT_FLAG)|\
+_CRTDBG_LEAK_CHECK_DF);
+
 #include <iostream>
 #include <fstream>
 #include <cstdio>
@@ -123,12 +126,18 @@ namespace zyk
 		}
 
 	}Material, *Material_Ptr;
+	
+	enum Light_type
+	{
+		DIRECTION_LIGHT,
+		SPOT_LIGHT
+	};
 
 	typedef struct tag_Light
 	{
 		int state; // state of light
 		int id;    // id of light
-		int attr;  // type of light, and extra qualifiers
+		Light_type type;  // type of light, and extra qualifiers
 
 		Vec4 c_ambient;   // ambient light intensity
 		Vec4 c_diffuse;   // diffuse light intensity
@@ -144,6 +153,7 @@ namespace zyk
 		int   iaux1, iaux2; // auxiliary vars for future expansion
 		float faux1, faux2;
 		void *ptr;
+		Vec3 getLightingDirection(const Vec3& point)const;
 	public:
 		EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 	}Light, *Light_Ptr;

@@ -120,5 +120,8 @@
     <ClInclude Include="ZYK\mesh_loader.h">
       <Filter>ZYK</Filter>
     </ClInclude>
+    <ClInclude Include="ZYK\RandomGenerator.h">
+      <Filter>ZYK</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

@@ -21,7 +21,6 @@ public:
 
 	float viewport_width,viewport_height,pixel_num;
 	zyk::Camera m_cam;
-	zyk::Light m_light;
 	zyk::Light* mLights;
 	zyk::Material m_materials[MAX_MATERIAL];
 	int mLightNum;

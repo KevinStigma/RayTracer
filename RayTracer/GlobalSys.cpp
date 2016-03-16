@@ -22,15 +22,7 @@ CGlobalSys::~CGlobalSys()
 
 void CGlobalSys::init_Light()
 {
-	m_light.attr=1; //direction light
-	m_light.c_ambient=Vec4::Ones();
-	m_light.c_diffuse=Vec4::Ones();
-	m_light.c_specular=Vec4::Ones();
-	m_light.pos=Vec3::Zero();
-	//m_light.dir=Vec3(0,1,1).normalized();
-	m_light.dir=Vec3(-0.57735027,0.57735027,0.57735027).normalized();
-
-	mLights=new zyk::Light[mLightNum];
+	/*mLights=new zyk::Light[mLightNum];
 	mLights[0].c_ambient=Vec4::Ones();
 	mLights[0].c_diffuse=Vec4::Ones();
 	mLights[0].c_specular=Vec4::Ones();
@@ -41,7 +33,7 @@ void CGlobalSys::init_Light()
 	mLights[1].c_diffuse=Vec4::Ones();
 	mLights[1].c_specular=Vec4::Ones();
 	mLights[1].pos=Vec3::Zero();
-	mLights[1].dir=Vec3( 0.57735027,-0.57735027,-0.57735027).normalized();
+	mLights[1].dir=Vec3( 0.57735027,-0.57735027,-0.57735027).normalized();*/
 }
 
 void CGlobalSys::init_Material()
@@ -209,6 +201,7 @@ void CGlobalSys::generateAreaLights(zyk::TriMesh*pTri_mesh)
 			mLights[start_ind+i*division+j].c_diffuse=Vec4::Ones();
 			mLights[start_ind+i*division+j].c_specular=Vec4::Ones();
 			mLights[start_ind+i*division+j].pos=position;
+			mLights[start_ind+i*division+j].type=zyk::Light_type::SPOT_LIGHT;
 		}
 	mLightNum+=grid_num;
 }

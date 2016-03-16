@@ -2,6 +2,7 @@
 #include "GlobalSys.h"
 #include "zyk/Objects.h"
 #include "zyk/mathematics.h"
+#include "zyk/RandomGenerator.h"
 #include <tchar.h>
 #include <typeinfo>
 #include <windows.h>
@@ -10,8 +11,8 @@
 #include <QString>
 
 RayTracer::RayTracer(QWidget *parent)
-	: QMainWindow(parent),render_buffer(NULL),viewport_image(g_pGlobalSys->viewport_width,g_pGlobalSys->viewport_height,QImage::Format_RGB888),
-	draw_shadow(false),draw_reflect(true),mMax_depth(2),m_render_type(GENERAL_RAY_TRACING)
+	: QMainWindow(parent),render_buffer(NULL),mRandGen(NULL),viewport_image(g_pGlobalSys->viewport_width,g_pGlobalSys->viewport_height,QImage::Format_RGB888),
+	draw_shadow(false),draw_reflect(true),mMax_depth(2),m_render_type(GENERAL_RAY_TRACING),mSampleNum(16)
 {
 	ui.setupUi(this);
 	setFixedSize(1026,703);
@@ -24,6 +25,7 @@ RayTracer::RayTracer(QWidget *parent)
 
 	ui.render_label->setFixedSize(g_pGlobalSys->viewport_width,g_pGlobalSys->viewport_height);
 	render_buffer=new zyk::UCHAR3[g_pGlobalSys->pixel_num];
+	mRandGen=new zyk::RandomGenerator;
 	initObjects();
 	renderScene();
 }
@@ -32,6 +34,7 @@ RayTracer::~RayTracer()
 {
 	 SAFE_DELETE(g_pGlobalSys);
 	 SAFE_DELETE_ARRAY(render_buffer);
+	 SAFE_DELETE(mRandGen);
 	 for(int i=0;i<(int)m_objects.size();i++)
 	 {
 		 SAFE_DELETE(m_objects[i]);
@@ -109,10 +112,11 @@ void RayTracer::initObjects()
 	m_objects[1]=new zyk::Sphere(Vec3(0,0,1),1.5);
 	m_objects[1]->setMaterial(&g_pGlobalSys->m_materials[6]);
 #else
-	m_objects.resize(1);
+	/*m_objects.resize(1);
 	zyk::TriMesh* tri_mesh=new zyk::TriMesh("../data/Scene/1/lightsource.obj");
 	g_pGlobalSys->generateAreaLights(tri_mesh);
 	m_objects[0]=tri_mesh;
+	m_objects[0]->setMaterial(&g_pGlobalSys->m_materials[0]);*/
 #endif
 }
 
@@ -138,21 +142,29 @@ inline void fillColor(const Vec4&pColor,zyk::UCHAR3& final_color)
 	final_color.z=pColor(2)*255;
 }
 
-void RayTracer::calPhongShading_oneLight(const zyk::Material& pMaterial,const zyk::Light& pLight,const Vec3& cam_pos,const Vec3& shad_pos,const Vec3& pNormal,Vec4& pColor)
+void RayTracer::calPhongShading_oneLight(const zyk::Material& pMaterial,const zyk::Light& pLight,const Vec3& cam_pos,
+	const Vec3& shad_pos,const Vec3& pNormal,Vec4& pColor,bool calSpecular)
 {
 	using zyk::dot_multV4;
 	Vec3 view_dir=(cam_pos-shad_pos).normalized();
-	Vec3 r_vec=-pLight.dir+2*pLight.dir.dot(pNormal)*pNormal;
-	float diff_val=pNormal.dot(pLight.dir);
-	float spec_val=pow(max(view_dir.dot(r_vec),0.0f),pMaterial.power);
-	if(diff_val<0)
-		spec_val=0.0;
+	Vec3 light_dir=pLight.getLightingDirection(shad_pos);
+	Vec3 r_vec;
+	float diff_val=pNormal.dot(light_dir);
+	float spec_val;
+	if(diff_val<=0||!calSpecular)
+		spec_val=0;
+	else
+	{
+		r_vec=-light_dir+2*light_dir.dot(pNormal)*pNormal;
+		spec_val=pow(max(view_dir.dot(r_vec),0.0f),pMaterial.power);
+	}
 	//Phong Shading
 	pColor=dot_multV4(max(diff_val,0.0f)*pLight.c_diffuse,pMaterial.rd)
 		+dot_multV4(spec_val*pLight.c_specular,pMaterial.rs);
 }
 
-Vec4 RayTracer::calPhongShading_manyLights(const zyk::Material& pMaterial,const std::vector<bool>& is_lighting,const Vec3& cam_pos,const Vec3& shad_pos,const Vec3& pNormal)
+Vec4 RayTracer::calPhongShading_manyLights(const zyk::Material& pMaterial,const std::vector<bool>& is_lighting,
+	const Vec3& cam_pos,const Vec3& shad_pos,const Vec3& pNormal,bool calSpecular)
 {
 	assert(is_lighting.size()==g_pGlobalSys->mLightNum);
 	Vec4 shade_color=pMaterial.ra;
@@ -161,7 +173,7 @@ Vec4 RayTracer::calPhongShading_manyLights(const zyk::Material& pMaterial,const 
 		if(!is_lighting[i])
 			continue;
 		Vec4 lighting_color;
-		calPhongShading_oneLight(pMaterial,g_pGlobalSys->mLights[i],cam_pos,shad_pos,pNormal,lighting_color);
+		calPhongShading_oneLight(pMaterial,g_pGlobalSys->mLights[i],cam_pos,shad_pos,pNormal,lighting_color,calSpecular);
 		shade_color+=lighting_color;
 	}
 	zyk::clip_0_to_1(shade_color);
@@ -175,9 +187,10 @@ void RayTracer::shadowCheck(int lightsNum,const zyk::Light* lights,const Vec3&in
 	for(int l_ind=0;l_ind<lightsNum;l_ind++)
 	{
 		bool in_shadow=false;
+		Vec3 light_dir=lights[l_ind].getLightingDirection(intersect_pt);
 		for(int obj_id=0;obj_id<(int)m_objects.size();obj_id++)
 		{
-			bool is_intersect=m_objects[obj_id]->intersect(intersect_pt+lights[l_ind].dir*0.01f,lights[l_ind].dir,t);
+			bool is_intersect=m_objects[obj_id]->intersect(intersect_pt+light_dir*0.01f,light_dir,t);
 			if(is_intersect)
 			{
 				in_shadow=true;
@@ -267,7 +280,7 @@ bool RayTracer::refractRay(const Vec3& origin,const Vec3&incident_dir,const Vec3
 	return true;
 }
 
-Vec4 RayTracer::castRayShading(const Vec3& origin,const Vec3& ray_dir,int depth,float input_rei)
+Vec4 RayTracer::castRayShading_RayTracing(const Vec3& origin,const Vec3& ray_dir,int depth,float input_rei)
 {
 	if(depth==mMax_depth+1)
 		return Vec4(0,0,0,1);
@@ -279,7 +292,7 @@ Vec4 RayTracer::castRayShading(const Vec3& origin,const Vec3& ray_dir,int depth,
 		return Vec4(0,0,0,1);
 	
 	Vec3 reflect_dir=(ray_dir-2*ray_dir.dot(inter_nor)*inter_nor).normalized();
-	Vec4 ref_color=castRayShading(inter_pt+reflect_dir*0.01,reflect_dir,depth+1,input_rei);
+	Vec4 ref_color=castRayShading_RayTracing(inter_pt+reflect_dir*0.01,reflect_dir,depth+1,input_rei);
 	Vec4 shade_color;
 	
 	if(m_objects[near_obj_id]->getMaterial()->is_solid)
@@ -308,7 +321,7 @@ Vec4 RayTracer::castRayShading(const Vec3& origin,const Vec3& ray_dir,int depth,
 			refra_weight=1-ref_weight;
 			float out_rei;
 			(typeid(*m_objects[near_obj_id])==typeid(zyk::Triangle))?out_rei=rei[0]:out_rei=rei[1];
-			Vec4 refra_color=castRayShading(inter_pt+refra_dir*0.01,refra_dir,depth+1,out_rei);
+			Vec4 refra_color=castRayShading_RayTracing(inter_pt+refra_dir*0.01,refra_dir,depth+1,out_rei);
 			shade_color=ref_color*ref_weight+refra_color*refra_weight;
 		}
 		else
@@ -317,6 +330,76 @@ Vec4 RayTracer::castRayShading(const Vec3& origin,const Vec3& ray_dir,int depth,
 	}
 	return shade_color;
 }
+
+Vec3 RayTracer::uniformSampleHemisphere(const float &r1,const float &r2)
+{
+	float sinTheta = sqrtf(1 - r1*r1); 
+	float phi = 2 * M_PI * 2; 
+	float x = sinTheta * cosf(phi); 
+	float z = sinTheta * sinf(phi); 
+	return Vec3(x,r1,z); 
+}
+
+//transform the vector dir(in local coordinate) into world coordinate based on 
+//a normal vector
+Vec3 transCoordinate(const Vec3& normal,const Vec3&dir)
+{
+	Vec3 Nt,Nb;
+	if (std::fabs(normal(0))>std::fabs(normal(1))) 
+		Nt = Vec3(normal(2), 0, -normal(0)).normalized(); 
+	else 
+		Nt = Vec3(0, -normal(2), normal(1)).normalized(); 
+	Nb = normal.cross(Nt); 	
+	Mat3 trans_mat;
+	trans_mat.col(0)=Nt;
+	trans_mat.col(1)=normal;
+	trans_mat.col(2)=Nb;
+	return trans_mat*dir;
+}
+
+Vec4 RayTracer::castRayShading_McSampling(const Vec3& origin,const Vec3& ray_dir,int depth,float input_rei)
+{
+	if(depth==mMax_depth+1)
+		return Vec4(0,0,0,1);
+	int near_obj_id=-1;
+	Vec3 inter_nor,inter_pt;
+	intersectionCheck(m_objects,origin,ray_dir,near_obj_id,inter_nor,inter_pt);
+
+	if(near_obj_id==-1)
+		return Vec4(0,0,0,1);
+
+	Vec4 indirect_color(0,0,0,1);
+	for(int i=0;i<mSampleNum;i++)
+	{
+		float r1=mRandGen->getRand();
+		float r2=mRandGen->getRand();
+		Vec3 sample_dir=transCoordinate(inter_nor,uniformSampleHemisphere(r1,r2));
+		Vec4 c=castRayShading_McSampling(inter_pt+sample_dir*0.01,sample_dir,depth+1,input_rei);
+		indirect_color+=c*sample_dir.dot(inter_nor);
+	}
+	indirect_color/=mSampleNum*(1.0f/(2*M_PI));
+
+	Vec4 shade_color;
+	if(m_objects[near_obj_id]->getMaterial()->is_solid)
+	{
+		std::vector<bool> is_lighting(g_pGlobalSys->mLightNum,true);
+		if(draw_shadow)
+			shadowCheck(g_pGlobalSys->mLightNum,g_pGlobalSys->mLights,inter_pt,is_lighting);
+
+		shade_color=calPhongShading_manyLights(*m_objects[near_obj_id]->getMaterial(),is_lighting,
+			g_pGlobalSys->m_cam.pos,inter_pt,inter_nor,false);
+
+		float ref_para=m_objects[near_obj_id]->getMaterial()->kr;
+		//combineColor(ref_para,ref_color,shade_color);	
+	}
+	else
+	{
+		//TODO:Refractive
+		shade_color=Vec4(0,0,0,1);
+	}
+	return shade_color;
+}
+
 
 #define ZDEBUG
 void RayTracer::rayTracing(zyk::UCHAR3*buffer)
@@ -345,9 +428,9 @@ void RayTracer::rayTracing(zyk::UCHAR3*buffer)
 			Vec3 ray_dir=rayCasting(v_cam,j,i);
 			Vec4 shade_color;
 			if(m_render_type==GENERAL_RAY_TRACING)
-				shade_color=castRayShading(v_cam.pos,ray_dir,0);
+				shade_color=castRayShading_RayTracing(v_cam.pos,ray_dir,0);
 			else if(m_render_type==MC_PATH_TRACING)
-				shade_color=Vec4(0,0,0,1);
+				shade_color=castRayShading_McSampling(v_cam.pos,ray_dir,0);
 			fillColor(shade_color,buffer[row_ind+j]);
 		}
 	}

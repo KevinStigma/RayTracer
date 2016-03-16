@@ -131,6 +131,7 @@
     <ClInclude Include="ZYK\mathematics.h" />
     <ClInclude Include="ZYK\mesh_loader.h" />
     <ClInclude Include="ZYK\Objects.h" />
+    <ClInclude Include="ZYK\RandomGenerator.h" />
     <ClInclude Include="ZYK\stb_image.h" />
   </ItemGroup>
   <ItemGroup>

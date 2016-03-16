@@ -10,6 +10,7 @@
 namespace zyk
 {
 	class Object;
+	class RandomGenerator;
 };
 enum RenderType{GENERAL_RAY_TRACING,MC_PATH_TRACING};
 
@@ -41,24 +42,27 @@ protected:
 	bool refractRay(const Vec3& origin,const Vec3&incident_dir,const Vec3& normal,const float rei[],
 		Vec3& refract_dir,float& ref_weight)const;
 	
-	Vec4 castRayShading(const Vec3& origin,const Vec3& ray_dir,int depth,float input_rei=1.0f);
+	Vec4 castRayShading_RayTracing(const Vec3& origin,const Vec3& ray_dir,int depth,float input_rei=1.0f);
+	Vec4 castRayShading_McSampling(const Vec3& origin,const Vec3& ray_dir,int depth,float input_rei=1.0f);
 	void shadowCheck(int lightsNum,const zyk::Light* lights,const Vec3&intersect_pt,std::vector<bool>& is_lighting);
 	void intersectionCheck(const std::vector<zyk::Object*>& objects,const Vec3& origin,const Vec3& ray_dir,
 		int& near_obj_id,Vec3& inter_pt_nor,Vec3&inter_pt);
 	void calPhongShading_oneLight(const zyk::Material& pMaterial,const zyk::Light& pLight,const Vec3& cam_pos,
-		const Vec3& shad_pos,const Vec3& pNormal,Vec4& pColor);
+		const Vec3& shad_pos,const Vec3& pNormal,Vec4& pColor,bool calSpecular=true);
 	Vec4 calPhongShading_manyLights(const zyk::Material& pMaterial,const std::vector<bool>& is_lighting,
-		const Vec3& cam_pos,const Vec3& shad_pos,const Vec3& pNormal);
+		const Vec3& cam_pos,const Vec3& shad_pos,const Vec3& pNormal,bool calSpecular=true);
+	Vec3 uniformSampleHemisphere(const float &r1, const float &r2);//generate a random direction in a hemisphere
 	void savePic()const;//save current picture in the data folder
 
 private:
 	Ui::RayTracerClass ui;
-	zyk::UCHAR3* render_buffer;  
+	zyk::UCHAR3* render_buffer;
+	zyk::RandomGenerator* mRandGen;
 	QImage viewport_image;
 	std::vector<zyk::Object*> m_objects;
 	RenderType m_render_type;
 	bool draw_shadow,draw_reflect;
-	int mMax_depth;
+	int mMax_depth,mSampleNum;
 };
 
 #endif // RAYTRACER_H
