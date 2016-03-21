@@ -3,7 +3,7 @@
 #include <algorithm>
 
 CGlobalSys *g_pGlobalSys = NULL;
-CGlobalSys::CGlobalSys():mLights(NULL),mLightNum(2)
+CGlobalSys::CGlobalSys():mLights(NULL),mLightNum(0)
 {
 	viewport_height=600;
 	viewport_width=800;
@@ -22,7 +22,9 @@ CGlobalSys::~CGlobalSys()
 
 void CGlobalSys::init_Light()
 {
-	/*mLights=new zyk::Light[mLightNum];
+	/*
+	mLightNum=2;
+	mLights=new zyk::Light[mLightNum];
 	mLights[0].c_ambient=Vec4::Ones();
 	mLights[0].c_diffuse=Vec4::Ones();
 	mLights[0].c_specular=Vec4::Ones();
@@ -54,7 +56,7 @@ void CGlobalSys::init_Material()
 	m_materials[index].rd=Vec4(m_materials[index].color.x*0.8f*inv_255,m_materials[index].color.y*0.8f*inv_255,m_materials[index].color.z*0.8f*inv_255,1.0f);
 	//m_materials[0].rs=Vec4(1.0f,1.0f,1.0f,1.0f);
 	m_materials[index].rs=Vec4(0.1f,0.1f,0.1f,1.0f);
-	m_materials[index].is_solid=true;
+	m_materials[index].type=zyk::SOLID;
 	
 	index=1;
 	m_materials[index].name="yellow";
@@ -70,7 +72,7 @@ void CGlobalSys::init_Material()
 	m_materials[index].rd=Vec4(m_materials[index].color.x*0.7f*inv_255,m_materials[index].color.y*0.7f*inv_255,m_materials[index].color.z*0.7f*inv_255,1.0f);
 	//m_materials[1].rs=Vec4(1.0f,1.0f,1.0f,1.0f);
 	m_materials[index].rs=Vec4(0.1f,0.1f,0.1f,1.0f);
-	m_materials[index].is_solid=true;
+	m_materials[index].type=zyk::SOLID;
 
 	index=2;
 	m_materials[index].name="purple";
@@ -86,7 +88,7 @@ void CGlobalSys::init_Material()
 	m_materials[index].rd=Vec4(m_materials[index].color.x*0.7f*inv_255,m_materials[index].color.y*0.7f*inv_255,m_materials[index].color.z*0.7f*inv_255,1.0f);
 	//m_materials[2].rs=Vec4(1.0f,1.0f,1.0f,1.0f);
 	m_materials[index].rs=Vec4(0.1f,0.1f,0.1f,1.0f);
-	m_materials[index].is_solid=true;
+	m_materials[index].type=zyk::SOLID;
 
 	index=3;
 	m_materials[index].name="cyan";
@@ -102,7 +104,7 @@ void CGlobalSys::init_Material()
 	m_materials[index].rd=Vec4(m_materials[index].color.x*0.7f*inv_255,m_materials[index].color.y*0.7f*inv_255,m_materials[index].color.z*0.7f*inv_255,1.0f);
 	//m_materials[3].rs=Vec4(1.0f,1.0f,1.0f,1.0f);
 	m_materials[index].rs=Vec4(0.1f,0.1f,0.1f,1.0f);
-	m_materials[index].is_solid=true;
+	m_materials[index].type=zyk::SOLID;
 
 	index=4;
 	m_materials[index].name="red";
@@ -118,7 +120,7 @@ void CGlobalSys::init_Material()
 	m_materials[index].rd=Vec4(m_materials[index].color.x*0.7f*inv_255,m_materials[index].color.y*0.7f*inv_255,m_materials[index].color.z*0.7f*inv_255,1.0f);
 	//m_materials[4].rs=Vec4(1.0f,1.0f,1.0f,1.0f);
 	m_materials[index].rs=Vec4(0.1f,0.1f,0.1f,1.0f);
-	m_materials[index].is_solid=true;
+	m_materials[index].type=zyk::SOLID;
 
 	index=5;
 	m_materials[index].name="red";
@@ -134,7 +136,7 @@ void CGlobalSys::init_Material()
 	m_materials[index].rd=Vec4(m_materials[index].color.x*0.7f*inv_255,m_materials[index].color.y*0.7f*inv_255,m_materials[index].color.z*0.7f*inv_255,1.0f);
 	//m_materials[4].rs=Vec4(1.0f,1.0f,1.0f,1.0f);
 	m_materials[index].rs=Vec4(0.1f,0.1f,0.1f,1.0f);
-	m_materials[index].is_solid=true;
+	m_materials[index].type=zyk::SOLID;
 
 	index=6;
 	m_materials[index].name="glass";
@@ -150,7 +152,58 @@ void CGlobalSys::init_Material()
 	m_materials[index].rd=Vec4(m_materials[index].color.x*0.7f*inv_255,m_materials[index].color.y*0.7f*inv_255,m_materials[index].color.z*0.7f*inv_255,1.0f);
 	//m_materials[4].rs=Vec4(1.0f,1.0f,1.0f,1.0f);
 	m_materials[index].rs=Vec4(0.0f,0.0f,0.0f,1.0f);
-	m_materials[index].is_solid=false;
+	m_materials[index].type=zyk::DIELECTRIC;
+	m_materials[index].rei=1.157f;
+
+	index=7;
+	m_materials[index].name="light_source";
+	m_materials[index].attr=2; 
+	m_materials[index].color.x=0;
+	m_materials[index].color.y=0;
+	m_materials[index].color.z=0;
+
+	m_materials[index].ks=m_materials[index].kd=m_materials[index].ka=1.0f;
+	m_materials[index].kr=tmp_kr;
+	m_materials[index].power=50.0f;
+	m_materials[index].ra=Vec4(m_materials[index].color.x*0.3f*inv_255,m_materials[index].color.y*0.3f*inv_255,m_materials[index].color.z*0.3f*inv_255,1.0f);
+	m_materials[index].rd=Vec4(m_materials[index].color.x*0.7f*inv_255,m_materials[index].color.y*0.7f*inv_255,m_materials[index].color.z*0.7f*inv_255,1.0f);
+	//m_materials[4].rs=Vec4(1.0f,1.0f,1.0f,1.0f);
+	m_materials[index].rs=Vec4(0.0f,0.0f,0.0f,1.0f);
+	m_materials[index].type=zyk::LIGHTSOURCE;
+	m_materials[index].rei=1.157f;
+
+	index=8;
+	m_materials[index].name="red";
+	m_materials[index].attr=2; 
+	m_materials[index].color.x=255;
+	m_materials[index].color.y=0;
+	m_materials[index].color.z=0;
+
+	m_materials[index].ks=m_materials[index].kd=m_materials[index].ka=1.0f;
+	m_materials[index].kr=tmp_kr;
+	m_materials[index].power=50.0f;
+	m_materials[index].ra=Vec4(m_materials[index].color.x*0.3f*inv_255,m_materials[index].color.y*0.3f*inv_255,m_materials[index].color.z*0.3f*inv_255,1.0f);
+	m_materials[index].rd=Vec4(m_materials[index].color.x*0.7f*inv_255,m_materials[index].color.y*0.7f*inv_255,m_materials[index].color.z*0.7f*inv_255,1.0f);
+	//m_materials[4].rs=Vec4(1.0f,1.0f,1.0f,1.0f);
+	m_materials[index].rs=Vec4(0.0f,0.0f,0.0f,1.0f);
+	m_materials[index].type=zyk::SOLID;
+	m_materials[index].rei=1.157f;
+
+	index=9;
+	m_materials[index].name="blue";
+	m_materials[index].attr=2; 
+	m_materials[index].color.x=0;
+	m_materials[index].color.y=0;
+	m_materials[index].color.z=100;
+
+	m_materials[index].ks=m_materials[index].kd=m_materials[index].ka=1.0f;
+	m_materials[index].kr=tmp_kr;
+	m_materials[index].power=50.0f;
+	m_materials[index].ra=Vec4(m_materials[index].color.x*0.3f*inv_255,m_materials[index].color.y*0.3f*inv_255,m_materials[index].color.z*0.3f*inv_255,1.0f);
+	m_materials[index].rd=Vec4(m_materials[index].color.x*0.7f*inv_255,m_materials[index].color.y*0.7f*inv_255,m_materials[index].color.z*0.7f*inv_255,1.0f);
+	//m_materials[4].rs=Vec4(1.0f,1.0f,1.0f,1.0f);
+	m_materials[index].rs=Vec4(0.0f,0.0f,0.0f,1.0f);
+	m_materials[index].type=zyk::SOLID;
 	m_materials[index].rei=1.157f;
 }
 
@@ -201,7 +254,7 @@ void CGlobalSys::generateAreaLights(zyk::TriMesh*pTri_mesh)
 			mLights[start_ind+i*division+j].c_diffuse=Vec4::Ones();
 			mLights[start_ind+i*division+j].c_specular=Vec4::Ones();
 			mLights[start_ind+i*division+j].pos=position;
-			mLights[start_ind+i*division+j].type=zyk::Light_type::SPOT_LIGHT;
+			mLights[start_ind+i*division+j].type=zyk::SPOT_LIGHT;
 		}
 	mLightNum+=grid_num;
 }

@@ -143,5 +143,6 @@ namespace zyk
 			return dir;
 		else if(type==SPOT_LIGHT)
 			return (pos-point).normalized();
+		return Vec3(0,0,0);
 	}
 };

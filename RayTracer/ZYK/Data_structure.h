@@ -15,6 +15,7 @@
 
 #define INV_2 0.5;
 #define INV_3 0.333333
+#define INV_PI 0.3183098
 
 #define RAD_TO_DEG 180.0/3.14159265
 #define DEG_TO_RAD 3.14159265/180.0
@@ -61,6 +62,7 @@ typedef Vec4* PointList;
 
 namespace zyk
 {
+	enum MaterialType {SOLID,DIELECTRIC,LIGHTSOURCE};
 	union UCHAR3
 	{
 		unsigned char m[3];
@@ -114,7 +116,7 @@ namespace zyk
 
 		std::string texture_file;   // file location of texture
 		Image texture;    // actual texture map (if any)
-		bool is_solid;
+		MaterialType type;
 		float rei; //refractive index
 
 		int   iaux1, iaux2;      // auxiliary vars for future expansion

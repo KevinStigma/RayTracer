@@ -88,6 +88,8 @@ namespace zyk
 
 	bool TriMesh::intersect(const Vec3& origin,const Vec3& ray_dir,float& t,Vec3& normal,Vec3& intersect_pt)const 
 	{
+		if(m_aabb&&!m_aabb->intersectCheck(origin,ray_dir))
+			return false;
 		Vec3 vVert[3],vNormal[3];
 		Vec2 coord_para;
 		t=0;
@@ -113,6 +115,8 @@ namespace zyk
 
 	bool TriMesh::intersect(const Vec3& origin,const Vec3& ray_dir,float& t)const
 	{
+		if(m_aabb&&!m_aabb->intersectCheck(origin,ray_dir))
+			return false;
 		Vec3 vVert[3];
 		Vec2 coord_para;
 		t=0;
@@ -146,7 +150,7 @@ namespace zyk
 		for(int i=1;i<=mModel->numvertices;i++)
 			m_center+=Vec3(mModel->vertices[i*3],mModel->vertices[i*3+1],mModel->vertices[i*3+2]);
 		m_center/=mModel->numvertices;
-		calVertNormal(1);
+		calVertNormal(2);
 		return true;
 	}
 
@@ -312,6 +316,16 @@ namespace zyk
 			mModel->vertices[ind]+=trans[0];
 			mModel->vertices[ind+1]+=trans[1];
 			mModel->vertices[ind+2]+=trans[2];
+		}
+	}
+
+	void TriMesh::setNormal(float nx,float ny,float nz)
+	{
+		for(int i=1;i<=mModel->numnormals;i++)
+		{
+			mModel->normals[i*3]=nx;
+			mModel->normals[i*3+1]=ny;
+			mModel->normals[i*3+2]=nz;
 		}
 	}
 

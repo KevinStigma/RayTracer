@@ -12,7 +12,7 @@
 
 RayTracer::RayTracer(QWidget *parent)
 	: QMainWindow(parent),render_buffer(NULL),mRandGen(NULL),viewport_image(g_pGlobalSys->viewport_width,g_pGlobalSys->viewport_height,QImage::Format_RGB888),
-	draw_shadow(false),draw_reflect(true),mMax_depth(2),m_render_type(GENERAL_RAY_TRACING),mSampleNum(16)
+	draw_shadow(false),draw_reflect(true),mMax_depth(1),m_render_type(GENERAL_RAY_TRACING),mSampleNum(64)
 {
 	ui.setupUi(this);
 	setFixedSize(1026,703);
@@ -117,6 +117,25 @@ void RayTracer::initObjects()
 	g_pGlobalSys->generateAreaLights(tri_mesh);
 	m_objects[0]=tri_mesh;
 	m_objects[0]->setMaterial(&g_pGlobalSys->m_materials[0]);*/
+	m_objects.resize(3);
+	zyk::TriMesh* tri_mesh=new zyk::TriMesh("../data/scene/1/lightsource.obj");
+	g_pGlobalSys->generateAreaLights(tri_mesh);
+	tri_mesh->setMaterial(&g_pGlobalSys->m_materials[7]);
+	//Vec3 center=tri_mesh->getCenter();
+	//tri_mesh->translate(-center);
+	m_objects[0]=tri_mesh;
+
+	tri_mesh=new zyk::TriMesh("../data/scene/1/wall1.obj");
+	tri_mesh->setNormal(1,0,0);
+	tri_mesh->setMaterial(&g_pGlobalSys->m_materials[8]);
+	std::cout<<tri_mesh->getCenter()<<std::endl;
+	m_objects[1]=tri_mesh;
+
+	tri_mesh=new zyk::TriMesh("../data/scene/1/wall4.obj");
+	tri_mesh->setNormal(-1,0,0);
+	tri_mesh->setMaterial(&g_pGlobalSys->m_materials[9]);
+	std::cout<<tri_mesh->getCenter()<<std::endl;
+	m_objects[2]=tri_mesh;
 #endif
 }
 
@@ -251,7 +270,7 @@ inline void combineColor(float ref_para,const Vec4&pRefColor,Vec4& pShadeColor)
 void RayTracer::fresnel(float cos1,float cos2,const float rei[],float &kr)const
 {
 	//in fact, this function should check if there exists total internal reflection,
-	//but now that its father function refractRay has this detection, I don't consider
+	//but now that its father function refractRay has this detection, so I don't consider
 	//this situation in the function
 	float fr1,fr2;
 	fr1=(rei[1]*cos1-rei[0]*cos2)/(rei[1]*cos1+rei[0]*cos2);
@@ -290,12 +309,15 @@ Vec4 RayTracer::castRayShading_RayTracing(const Vec3& origin,const Vec3& ray_dir
 
 	if(near_obj_id==-1)
 		return Vec4(0,0,0,1);
+
+	if(near_obj_id==2)
+		int z=0;
 	
 	Vec3 reflect_dir=(ray_dir-2*ray_dir.dot(inter_nor)*inter_nor).normalized();
 	Vec4 ref_color=castRayShading_RayTracing(inter_pt+reflect_dir*0.01,reflect_dir,depth+1,input_rei);
 	Vec4 shade_color;
 	
-	if(m_objects[near_obj_id]->getMaterial()->is_solid)
+	if(m_objects[near_obj_id]->getMaterial()->type==zyk::SOLID)
 	{
 		std::vector<bool> is_lighting(g_pGlobalSys->mLightNum,true);
 		if(draw_shadow)
@@ -307,7 +329,7 @@ Vec4 RayTracer::castRayShading_RayTracing(const Vec3& origin,const Vec3& ray_dir
 		float ref_para=m_objects[near_obj_id]->getMaterial()->kr;
 		combineColor(ref_para,ref_color,shade_color);	
 	}
-	else
+	else if(m_objects[near_obj_id]->getMaterial()->type==zyk::DIELECTRIC)
 	{
 		float rei[2]={input_rei,m_objects[near_obj_id]->getMaterial()->rei};
 		if(FCMP(rei[0],rei[1])&&rei[0]>1.0f)// the ray is leaving out the dielectric
@@ -328,6 +350,8 @@ Vec4 RayTracer::castRayShading_RayTracing(const Vec3& origin,const Vec3& ray_dir
 			shade_color=ref_color;
 		zyk::clip_0_to_1(shade_color);
 	}
+	else if(m_objects[near_obj_id]->getMaterial()->type==zyk::LIGHTSOURCE)
+		shade_color=Vec4(1,1,1,1);
 	return shade_color;
 }
 
@@ -369,34 +393,43 @@ Vec4 RayTracer::castRayShading_McSampling(const Vec3& origin,const Vec3& ray_dir
 		return Vec4(0,0,0,1);
 
 	Vec4 indirect_color(0,0,0,1);
-	for(int i=0;i<mSampleNum;i++)
+	if(m_objects[near_obj_id]->getMaterial()->type!=zyk::LIGHTSOURCE)
 	{
-		float r1=mRandGen->getRand();
-		float r2=mRandGen->getRand();
-		Vec3 sample_dir=transCoordinate(inter_nor,uniformSampleHemisphere(r1,r2));
-		Vec4 c=castRayShading_McSampling(inter_pt+sample_dir*0.01,sample_dir,depth+1,input_rei);
-		indirect_color+=c*sample_dir.dot(inter_nor);
+		for(int i=0;i<mSampleNum;i++)
+		{
+			float r1=mRandGen->getRand();
+			float r2=mRandGen->getRand();
+			Vec3 sample_dir=transCoordinate(inter_nor,uniformSampleHemisphere(r1,r2));
+			Vec4 c=castRayShading_McSampling(inter_pt+sample_dir*0.01,sample_dir,depth+1,input_rei);
+			indirect_color+=c*sample_dir.dot(inter_nor);
+		}
+		indirect_color/=mSampleNum;
 	}
-	indirect_color/=mSampleNum*(1.0f/(2*M_PI));
 
-	Vec4 shade_color;
-	if(m_objects[near_obj_id]->getMaterial()->is_solid)
+	Vec4 direct_color,shade_color;
+	if(m_objects[near_obj_id]->getMaterial()->type==zyk::SOLID)
 	{
 		std::vector<bool> is_lighting(g_pGlobalSys->mLightNum,true);
 		if(draw_shadow)
 			shadowCheck(g_pGlobalSys->mLightNum,g_pGlobalSys->mLights,inter_pt,is_lighting);
 
-		shade_color=calPhongShading_manyLights(*m_objects[near_obj_id]->getMaterial(),is_lighting,
+		direct_color=calPhongShading_manyLights(*m_objects[near_obj_id]->getMaterial(),is_lighting,
 			g_pGlobalSys->m_cam.pos,inter_pt,inter_nor,false);
 
-		float ref_para=m_objects[near_obj_id]->getMaterial()->kr;
-		//combineColor(ref_para,ref_color,shade_color);	
+		if(!(FCMP(indirect_color(0),0)&&FCMP(indirect_color(1),0)&&FCMP(indirect_color(2),0)))
+			shade_color=(direct_color*INV_PI + 2*indirect_color);
+		else
+			shade_color=direct_color;
+		zyk::clip_0_to_1(shade_color);
 	}
-	else
+	else if(m_objects[near_obj_id]->getMaterial()->type==zyk::DIELECTRIC)
 	{
 		//TODO:Refractive
 		shade_color=Vec4(0,0,0,1);
 	}
+	else if(m_objects[near_obj_id]->getMaterial()->type==zyk::LIGHTSOURCE)
+		shade_color=Vec4(1,1,1,1);
+
 	return shade_color;
 }
 

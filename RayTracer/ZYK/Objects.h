@@ -88,6 +88,7 @@ namespace zyk
 		void translate(const Vec3& trans);
 		void calOBB();
 		void calAABB();
+		void setNormal(float nx,float ny,float nz);//we set all the vertices a same normal for some special case
 		const GLMmodel* getMesh()const{return mModel;}
 		GLMmodel* getMesh(){return mModel;}
 		const AABB* getAABB()const{return m_aabb;}
@@ -95,7 +96,7 @@ namespace zyk
 		virtual bool intersect(const Vec3& origin,const Vec3& dir,float& t,Vec3& normal,Vec3& intersect_pt)const;
 		virtual bool intersect(const Vec3& origin,const Vec3& dir,float& t)const;
 	protected:
-		void calVertNormal(int status=1);
+		void calVertNormal(int status=1);//calculate the mesh's normals for each vertex, status means the direction of normal
 	private:
 		GLMmodel* mModel;
 		Vec3 m_center;

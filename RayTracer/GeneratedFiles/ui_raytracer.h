@@ -67,11 +67,12 @@ public:
         actionGeneral_RayTracing = new QAction(RayTracerClass);
         actionGeneral_RayTracing->setObjectName(QStringLiteral("actionGeneral_RayTracing"));
         actionGeneral_RayTracing->setCheckable(true);
-        actionGeneral_RayTracing->setChecked(true);
+        actionGeneral_RayTracing->setChecked(false);
         actionGeneral_RayTracing->setEnabled(true);
         actionMC_PathTracing = new QAction(RayTracerClass);
         actionMC_PathTracing->setObjectName(QStringLiteral("actionMC_PathTracing"));
         actionMC_PathTracing->setCheckable(true);
+        actionMC_PathTracing->setChecked(true);
         centralWidget = new QWidget(RayTracerClass);
         centralWidget->setObjectName(QStringLiteral("centralWidget"));
         label = new QLabel(centralWidget);
@@ -138,7 +139,7 @@ public:
         RayTracerClass->setCentralWidget(centralWidget);
         menuBar = new QMenuBar(RayTracerClass);
         menuBar->setObjectName(QStringLiteral("menuBar"));
-        menuBar->setGeometry(QRect(0, 0, 1026, 23));
+        menuBar->setGeometry(QRect(0, 0, 1026, 26));
         menuFile = new QMenu(menuBar);
         menuFile->setObjectName(QStringLiteral("menuFile"));
         menuRender_Type = new QMenu(menuBar);
@@ -172,7 +173,7 @@ public:
         RenderButton->setText(QApplication::translate("RayTracerClass", "Render", 0));
         posXEdit->setText(QApplication::translate("RayTracerClass", "0", 0));
         posYEdit->setText(QApplication::translate("RayTracerClass", "0", 0));
-        posZEdit->setText(QApplication::translate("RayTracerClass", "10", 0));
+        posZEdit->setText(QApplication::translate("RayTracerClass", "30", 0));
         label_2->setText(QApplication::translate("RayTracerClass", "(", 0));
         label_3->setText(QApplication::translate("RayTracerClass", ")", 0));
         label_4->setText(QApplication::translate("RayTracerClass", ",", 0));
@@ -180,7 +181,7 @@ public:
         render_label->setText(QApplication::translate("RayTracerClass", "TextLabel", 0));
         drawShadowCheck->setText(QApplication::translate("RayTracerClass", "Draw Shadow", 0));
         drawReflectCheck->setText(QApplication::translate("RayTracerClass", "Draw Reflection", 0));
-        depthEdit->setText(QApplication::translate("RayTracerClass", "2", 0));
+        depthEdit->setText(QApplication::translate("RayTracerClass", "1", 0));
         label_6->setText(QApplication::translate("RayTracerClass", "Depth", 0));
         menuFile->setTitle(QApplication::translate("RayTracerClass", "File", 0));
         menuRender_Type->setTitle(QApplication::translate("RayTracerClass", "Render Type", 0));
