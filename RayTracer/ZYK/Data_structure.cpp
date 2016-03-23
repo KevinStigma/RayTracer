@@ -137,12 +137,33 @@ namespace zyk
 		out.close();
 	}
 
+	void Light::getIlluminatinInfo(const Vec3& point,Vec3& light_dir,Vec4& light_intensity)const
+	{
+		light_dir=getLightingDirection(point);
+		if(type==DIRECTION_LIGHT)
+		{
+			light_intensity=Vec4(1.0,1.0,1.0,1.0);
+		}
+		else if(type==SPOT_LIGHT)
+		{
+			Vec3 light_vec=pos-point;
+			float d=light_vec.norm();
+			float value=1.0/(kc+kl*d);
+			light_intensity=Vec4(value,value,value,1.0f);
+		}
+	}
+
 	Vec3 Light::getLightingDirection(const Vec3& point)const
 	{
 		if(type==DIRECTION_LIGHT)
+		{
 			return dir;
+		}
 		else if(type==SPOT_LIGHT)
-			return (pos-point).normalized();
+		{
+			Vec3 light_vec=pos-point;
+			return light_vec.normalized();
+		}
 		return Vec3(0,0,0);
 	}
 };

@@ -155,6 +155,7 @@ namespace zyk
 		int   iaux1, iaux2; // auxiliary vars for future expansion
 		float faux1, faux2;
 		void *ptr;
+		void getIlluminatinInfo(const Vec3& point,Vec3& light_dir,Vec4& light_intensity)const;
 		Vec3 getLightingDirection(const Vec3& point)const;
 	public:
 		EIGEN_MAKE_ALIGNED_OPERATOR_NEW

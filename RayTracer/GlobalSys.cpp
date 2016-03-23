@@ -255,6 +255,9 @@ void CGlobalSys::generateAreaLights(zyk::TriMesh*pTri_mesh)
 			mLights[start_ind+i*division+j].c_specular=Vec4::Ones();
 			mLights[start_ind+i*division+j].pos=position;
 			mLights[start_ind+i*division+j].type=zyk::SPOT_LIGHT;
+			mLights[start_ind+i*division+j].kc=1.0f;
+			mLights[start_ind+i*division+j].kl=0.1f;
+			mLights[start_ind+i*division+j].kq=0.01f;
 		}
 	mLightNum+=grid_num;
 }

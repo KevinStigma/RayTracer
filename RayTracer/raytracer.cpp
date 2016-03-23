@@ -166,7 +166,9 @@ void RayTracer::calPhongShading_oneLight(const zyk::Material& pMaterial,const zy
 {
 	using zyk::dot_multV4;
 	Vec3 view_dir=(cam_pos-shad_pos).normalized();
-	Vec3 light_dir=pLight.getLightingDirection(shad_pos);
+	Vec4 light_intensity;
+	Vec3 light_dir;
+	pLight.getIlluminatinInfo(shad_pos,light_dir,light_intensity);
 	Vec3 r_vec;
 	float diff_val=pNormal.dot(light_dir);
 	float spec_val;
@@ -178,8 +180,8 @@ void RayTracer::calPhongShading_oneLight(const zyk::Material& pMaterial,const zy
 		spec_val=pow(max(view_dir.dot(r_vec),0.0f),pMaterial.power);
 	}
 	//Phong Shading
-	pColor=dot_multV4(max(diff_val,0.0f)*pLight.c_diffuse,pMaterial.rd)
-		+dot_multV4(spec_val*pLight.c_specular,pMaterial.rs);
+	pColor=dot_multV4(max(diff_val,0.0f)*light_intensity,pMaterial.rd)
+		+dot_multV4(spec_val*light_intensity,pMaterial.rs);
 }
 
 Vec4 RayTracer::calPhongShading_manyLights(const zyk::Material& pMaterial,const std::vector<bool>& is_lighting,
@@ -255,6 +257,7 @@ void RayTracer::intersectionCheck(const std::vector<zyk::Object*>& pObjects,cons
 		}
 	}
 }
+
 inline void combineColor(float ref_para,const Vec4&pRefColor,Vec4& pShadeColor)
 {
 	pShadeColor=pShadeColor+ref_para*pRefColor;
@@ -401,7 +404,7 @@ Vec4 RayTracer::castRayShading_McSampling(const Vec3& origin,const Vec3& ray_dir
 			float r2=mRandGen->getRand();
 			Vec3 sample_dir=transCoordinate(inter_nor,uniformSampleHemisphere(r1,r2));
 			Vec4 c=castRayShading_McSampling(inter_pt+sample_dir*0.01,sample_dir,depth+1,input_rei);
-			indirect_color+=c*sample_dir.dot(inter_nor);
+			indirect_color+=c*max(sample_dir.dot(inter_nor),0);
 		}
 		indirect_color/=mSampleNum;
 	}
