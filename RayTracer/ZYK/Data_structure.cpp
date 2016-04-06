@@ -1,4 +1,5 @@
 #include "Data_structure.h"
+#include "Objects.h"
 
 namespace zyk
 {
@@ -137,20 +138,23 @@ namespace zyk
 		out.close();
 	}
 
+	tag_Light::tag_Light():light_source_mesh(NULL){}
+
 	void Light::getIlluminatinInfo(const Vec3& point,Vec3& light_dir,Vec4& light_intensity)const
 	{
 		light_dir=getLightingDirection(point);
 		if(type==DIRECTION_LIGHT)
-		{
 			light_intensity=Vec4(1.0,1.0,1.0,1.0);
-		}
 		else if(type==SPOT_LIGHT)
 		{
+			light_dir=getLightingDirection(point);
 			Vec3 light_vec=pos-point;
 			float d=light_vec.norm();
 			float value=1.0/(kc+kl*d);
 			light_intensity=Vec4(value,value,value,1.0f);
 		}
+		else if(type==AREA_LIGHT)
+			light_intensity=Vec4(1.0,1.0,1.0,1.0);
 	}
 
 	Vec3 Light::getLightingDirection(const Vec3& point)const
@@ -163,6 +167,12 @@ namespace zyk
 		{
 			Vec3 light_vec=pos-point;
 			return light_vec.normalized();
+		}
+		else if(type==AREA_LIGHT)
+		{
+			assert(light_source_mesh&&light_source_mesh->getOBB());
+			Vec3 rand_light_pos=light_source_mesh->getOBB()->getRandomPt();
+			return (rand_light_pos-point).normalized();
 		}
 		return Vec3(0,0,0);
 	}

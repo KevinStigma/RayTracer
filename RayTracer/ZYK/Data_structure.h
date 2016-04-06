@@ -132,11 +132,14 @@ namespace zyk
 	enum Light_type
 	{
 		DIRECTION_LIGHT,
-		SPOT_LIGHT
+		SPOT_LIGHT,
+		AREA_LIGHT
 	};
 
+	class TriMesh;
 	typedef struct tag_Light
 	{
+		tag_Light();
 		int state; // state of light
 		int id;    // id of light
 		Light_type type;  // type of light, and extra qualifiers
@@ -154,9 +157,10 @@ namespace zyk
 
 		int   iaux1, iaux2; // auxiliary vars for future expansion
 		float faux1, faux2;
-		void *ptr;
+		TriMesh* light_source_mesh;
 		void getIlluminatinInfo(const Vec3& point,Vec3& light_dir,Vec4& light_intensity)const;
 		Vec3 getLightingDirection(const Vec3& point)const;
+		
 	public:
 		EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 	}Light, *Light_Ptr;

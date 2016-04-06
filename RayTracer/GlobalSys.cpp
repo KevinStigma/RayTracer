@@ -218,46 +218,54 @@ void CGlobalSys::generateAreaLights(zyk::TriMesh*pTri_mesh)
 		std::cout<<"You must calculate the mesh's bounding box first!"<<std::endl;
 		return;
 	}
-
-	float coord_length[3]={obb->XL,obb->YL,obb->ZL};
-	int index_list[3]={0,1,2};
-	//I don't know why this is false when I cancel the symbom '&' in the lambda function
-	std::sort(index_list,index_list+3,[&coord_length](const int&a,const int&b)->int{return coord_length[a]>coord_length[b];});
-
-	int division=5,grid_num=division*division;
-	float grid_span[3];
-	for(int i=0;i<3;i++)
-	{
-		if(i!=2)
-			grid_span[i]=coord_length[index_list[i]]/division;
-		else
-			grid_span[i]=coord_length[index_list[i]];
-	}
-	
-	//copy the backup lights info into new array
 	zyk::Light_Ptr light_backup=mLights;
-	mLights=new zyk::Light[mLightNum+grid_num];
+	mLights=new zyk::Light[mLightNum+1];
 	for(int i=0;i<mLightNum;i++)
 		mLights[i]=light_backup[i];
 	SAFE_DELETE_ARRAY(light_backup);
+	mLights[mLightNum].type=zyk::AREA_LIGHT;
+	mLights[mLightNum].light_source_mesh=pTri_mesh;
+	mLightNum++;
 
-	int start_ind=mLightNum;
-	for(int i=0;i<division;i++)
-		for(int j=0;j<division;j++)
-		{
-			Vec3 p1=obb->bot_pos;
-			Vec3 vz=obb->local_coord[index_list[2]]*grid_span[2];
-			Vec3 vx=(i*2+1)*obb->local_coord[index_list[0]]*grid_span[0];
-			Vec3 vy=(j*2+1)*obb->local_coord[index_list[1]]*grid_span[1];
-			Vec3 position=p1+vx+vy+vz;
-			mLights[start_ind+i*division+j].c_ambient=Vec4::Ones();
-			mLights[start_ind+i*division+j].c_diffuse=Vec4::Ones();
-			mLights[start_ind+i*division+j].c_specular=Vec4::Ones();
-			mLights[start_ind+i*division+j].pos=position;
-			mLights[start_ind+i*division+j].type=zyk::SPOT_LIGHT;
-			mLights[start_ind+i*division+j].kc=1.0f;
-			mLights[start_ind+i*division+j].kl=0.1f;
-			mLights[start_ind+i*division+j].kq=0.01f;
-		}
-	mLightNum+=grid_num;
+	//float coord_length[3]={obb->XL,obb->YL,obb->ZL};
+	//int index_list[3]={0,1,2};
+	////I don't know why this is false when I cancel the symbom '&' in the lambda function
+	//std::sort(index_list,index_list+3,[&coord_length](const int&a,const int&b)->int{return coord_length[a]>coord_length[b];});
+
+	//int division=5,grid_num=division*division;
+	//float grid_span[3];
+	//for(int i=0;i<3;i++)
+	//{
+	//	if(i!=2)
+	//		grid_span[i]=coord_length[index_list[i]]/division;
+	//	else
+	//		grid_span[i]=coord_length[index_list[i]];
+	//}
+	//
+	////copy the backup lights info into new array
+	//zyk::Light_Ptr light_backup=mLights;
+	//mLights=new zyk::Light[mLightNum+grid_num];
+	//for(int i=0;i<mLightNum;i++)
+	//	mLights[i]=light_backup[i];
+	//SAFE_DELETE_ARRAY(light_backup);
+
+	//int start_ind=mLightNum;
+	//for(int i=0;i<division;i++)
+	//	for(int j=0;j<division;j++)
+	//	{
+	//		Vec3 p1=obb->bot_pos;
+	//		Vec3 vz=obb->local_coord[index_list[2]]*grid_span[2];
+	//		Vec3 vx=(i*2+1)*obb->local_coord[index_list[0]]*grid_span[0];
+	//		Vec3 vy=(j*2+1)*obb->local_coord[index_list[1]]*grid_span[1];
+	//		Vec3 position=p1+vx+vy+vz;
+	//		mLights[start_ind+i*division+j].c_ambient=Vec4::Ones();
+	//		mLights[start_ind+i*division+j].c_diffuse=Vec4::Ones();
+	//		mLights[start_ind+i*division+j].c_specular=Vec4::Ones();
+	//		mLights[start_ind+i*division+j].pos=position;
+	//		mLights[start_ind+i*division+j].type=zyk::SPOT_LIGHT;
+	//		mLights[start_ind+i*division+j].kc=1.0f;
+	//		mLights[start_ind+i*division+j].kl=0.1f;
+	//		mLights[start_ind+i*division+j].kq=0.01f;
+	//	}
+	//mLightNum+=grid_num;
 }

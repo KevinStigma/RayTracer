@@ -7,6 +7,7 @@
 #ifndef OBJECTS_H
 #define OBJECTS_H
 #include "Data_structure.h"
+#include "RandomGenerator.h"
 
 struct GLMmodel;
 namespace zyk
@@ -59,6 +60,12 @@ namespace zyk
 			YL=top_pos(1)-bot_pos(1);
 			ZL=top_pos(2)-bot_pos(2);
 		}
+		Vec3 getRandomPt()const//get random point in the OBB framework
+		{
+			static RandomGenerator rand_gen(0);
+			float xl=rand_gen.getRand()*XL,yl=rand_gen.getRand()*YL,zl=rand_gen.getRand()*ZL;
+			return bot_pos+local_coord[0]*xl+local_coord[1]*yl+local_coord[2]*zl;
+		}
 	};
 
 	struct AABB
@@ -75,7 +82,6 @@ namespace zyk
 		}
 		bool intersectCheck(const Vec3& origin,const Vec3& dir)const;
 	};
-
 
 	class TriMesh:public Object
 	{
