@@ -147,7 +147,6 @@ namespace zyk
 			light_intensity=Vec4(1.0,1.0,1.0,1.0);
 		else if(type==SPOT_LIGHT)
 		{
-			light_dir=getLightingDirection(point);
 			Vec3 light_vec=pos-point;
 			float d=light_vec.norm();
 			float value=1.0/(kc+kl*d);
