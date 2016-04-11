@@ -38,6 +38,70 @@ void CGlobalSys::init_Light()
 	mLights[1].dir=Vec3( 0.57735027,-0.57735027,-0.57735027).normalized();*/
 }
 
+void set_material_from_file(std::ifstream&in,zyk::Material&material)
+{
+	assert(in.is_open());
+	float tmp_array[3];
+	float tmp_value;
+	std::string tmp_str;
+	
+	in>>tmp_str;
+	material.name=tmp_str;
+
+	in>>tmp_value;
+	if(tmp_value==0)
+		material.type=zyk::SOLID;
+	else if(tmp_value==1)
+		material.type=zyk::DIELECTRIC;
+	else
+		material.type=zyk::LIGHTSOURCE;
+
+	in>>tmp_value;
+	in>>tmp_array[0]>>tmp_array[1]>>tmp_array[2];
+	material.ka=tmp_value;
+	material.ra=Vec4(tmp_array[0],tmp_array[1],tmp_array[2],1.0f);
+
+	in>>tmp_value;
+	in>>tmp_array[0]>>tmp_array[1]>>tmp_array[2];
+	material.kd=tmp_value;
+	material.rd=Vec4(tmp_array[0],tmp_array[1],tmp_array[2],1.0f);
+
+	in>>tmp_value;
+	in>>tmp_array[0]>>tmp_array[1]>>tmp_array[2];
+	material.ks=tmp_value;
+	material.rs=Vec4(tmp_array[0],tmp_array[1],tmp_array[2],1.0f);
+
+	in>>tmp_value;
+	material.power=tmp_value;
+
+	in>>tmp_value;
+	material.kr=tmp_value;
+
+	in>>tmp_value;
+	material.rei=tmp_value;
+}
+
+void CGlobalSys::load_Material(const char* txtName)
+{
+	std::ifstream in(txtName);
+	if(!in.is_open())
+	{
+		std::cout<<"Can't open the file!"<<std::endl;
+		return;
+	}
+	in>>mMatNum;
+	if(mMatNum>MAX_MATERIAL)
+	{
+		std::cout<<"Exceed the number of max material num!"<<std::endl;
+		return;
+	}
+
+	for(int i=0;i<mMatNum;i++)
+		set_material_from_file(in,m_materials[i]);
+
+	in.close();
+}
+
 void CGlobalSys::init_Material()
 {
 	float inv_255=1/255.0f;

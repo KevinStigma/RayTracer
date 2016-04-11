@@ -18,12 +18,14 @@ public:
 	void generateAreaLights(zyk::TriMesh*pTri_mesh);
 	void init_Light();
 	void init_Material();
+	void load_Material(const char* txtName);//parse the txt file to get the material information 
 
 	float viewport_width,viewport_height,pixel_num;
 	zyk::Camera m_cam;
 	zyk::Light* mLights;
 	zyk::Material m_materials[MAX_MATERIAL];
 	int mLightNum;
+	int mMatNum;
 public:
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 };

@@ -312,9 +312,6 @@ Vec4 RayTracer::castRayShading_RayTracing(const Vec3& origin,const Vec3& ray_dir
 
 	if(near_obj_id==-1)
 		return Vec4(0,0,0,1);
-
-	if(near_obj_id==2)
-		int z=0;
 	
 	Vec3 reflect_dir=(ray_dir-2*ray_dir.dot(inter_nor)*inter_nor).normalized();
 	Vec4 ref_color=castRayShading_RayTracing(inter_pt+reflect_dir*0.01,reflect_dir,depth+1,input_rei);
