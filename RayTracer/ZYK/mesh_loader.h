@@ -66,7 +66,7 @@ namespace zyk
 
 		int num_polys;        // number of polygons in object mesh
 		Facet plist[OBJECT4DV1_MAX_POLYS]; // array of polygony
-		Material_Ptr material;
+		Material* material;
 	public:
 		EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 	}ObjectMesh,*ObjectPtr;

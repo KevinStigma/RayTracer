@@ -102,8 +102,26 @@ void CGlobalSys::load_Material(const char* txtName)
 	in.close();
 }
 
+const zyk::Material* CGlobalSys::getMaterialByName(const std::string& name)const
+{
+	for(int i=0;i<mMatNum;i++)
+	{
+		if(name==m_materials[i].name)
+			return &m_materials[i];
+	}
+	return NULL;
+}
+
+zyk::Material* CGlobalSys::getMaterialByName(const std::string& name)
+{
+	return const_cast<zyk::Material*>(static_cast<const CGlobalSys&>(*this).getMaterialByName(name));
+}
+
+#define LOAD_MAT
 void CGlobalSys::init_Material()
 {
+
+#ifndef LOAD_MAT
 	float inv_255=1/255.0f;
 	float tmp_kr=0.4;
 	int index=0;
@@ -269,6 +287,9 @@ void CGlobalSys::init_Material()
 	m_materials[index].rs=Vec4(0.0f,0.0f,0.0f,1.0f);
 	m_materials[index].type=zyk::SOLID;
 	m_materials[index].rei=1.157f;
+#else
+	load_Material("material_script.txt");
+#endif
 }
 
 void CGlobalSys::generateAreaLights(zyk::TriMesh*pTri_mesh)

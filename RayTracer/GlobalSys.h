@@ -18,7 +18,9 @@ public:
 	void generateAreaLights(zyk::TriMesh*pTri_mesh);
 	void init_Light();
 	void init_Material();
-	void load_Material(const char* txtName);//parse the txt file to get the material information 
+	void load_Material(const char* txtName);//parse the txt file to get the material information
+	const zyk::Material* getMaterialByName(const std::string& name)const;
+	zyk::Material* getMaterialByName(const std::string& name);
 
 	float viewport_width,viewport_height,pixel_num;
 	zyk::Camera m_cam;

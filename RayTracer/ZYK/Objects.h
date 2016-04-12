@@ -19,10 +19,10 @@ namespace zyk
 		virtual ~Object(){}
 		virtual bool intersect(const Vec3& origin,const Vec3& dir,float& t,Vec3& normal,Vec3& intersect_pt)const=0;
 		virtual bool intersect(const Vec3& origin,const Vec3& dir,float& t)const=0;
-		void setMaterial(Material_Ptr mat) {m_material=mat;}
-		const Material_Ptr getMaterial()const {return m_material;}
+		void setMaterial(Material* mat) {assert(mat);m_material=mat;}
+		const Material* getMaterial()const {return m_material;}
 	protected:
-		Material_Ptr m_material;
+		Material* m_material;
 	};
 
 	class Sphere:public Object

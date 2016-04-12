@@ -120,20 +120,20 @@ void RayTracer::initObjects()
 	m_objects.resize(3);
 	zyk::TriMesh* tri_mesh=new zyk::TriMesh("../data/scene/1/lightsource.obj");
 	g_pGlobalSys->generateAreaLights(tri_mesh);
-	tri_mesh->setMaterial(&g_pGlobalSys->m_materials[7]);
+	tri_mesh->setMaterial(g_pGlobalSys->getMaterialByName("gray"));
 	//Vec3 center=tri_mesh->getCenter();
 	//tri_mesh->translate(-center);
 	m_objects[0]=tri_mesh;
 
 	tri_mesh=new zyk::TriMesh("../data/scene/1/wall1.obj");
 	tri_mesh->setNormal(1,0,0);
-	tri_mesh->setMaterial(&g_pGlobalSys->m_materials[8]);
+	tri_mesh->setMaterial(g_pGlobalSys->getMaterialByName("red"));
 	std::cout<<tri_mesh->getCenter()<<std::endl;
 	m_objects[1]=tri_mesh;
 
 	tri_mesh=new zyk::TriMesh("../data/scene/1/wall4.obj");
 	tri_mesh->setNormal(-1,0,0);
-	tri_mesh->setMaterial(&g_pGlobalSys->m_materials[9]);
+	tri_mesh->setMaterial(g_pGlobalSys->getMaterialByName("blue"));
 	std::cout<<tri_mesh->getCenter()<<std::endl;
 	m_objects[2]=tri_mesh;
 #endif

@@ -127,7 +127,7 @@ namespace zyk
 			//texture=NULL;
 		}
 
-	}Material, *Material_Ptr;
+	}Material;
 	
 	enum Light_type
 	{
@@ -237,7 +237,7 @@ namespace zyk
 		Vec4 v_color[3];
 		TexCoord texc[3];
 		Vec3 normal_camera;
-		Material_Ptr mat_ptr;
+		Material* mat_ptr;
 		void draw_lines(QPainter& painter);
 		void draw_vertices(QPainter&painter);
 	}PolyFace,*PolyFace_Ptr;
