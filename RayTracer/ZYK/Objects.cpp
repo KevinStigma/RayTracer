@@ -4,6 +4,9 @@
 
 namespace zyk
 {
+	Object::~Object()
+	{}
+
 	bool Sphere::intersect(const Vec3& origin,const Vec3& dir,float& t,Vec3& p_normal,Vec3& inters_pt)const
 	{
 		if(!intersect(origin,dir,t))
@@ -86,6 +89,8 @@ namespace zyk
 			mModel=NULL;
 	}
 
+	TriMesh::TriMesh():mModel(NULL),m_aabb(NULL),m_obb(NULL){}
+
 	bool TriMesh::intersect(const Vec3& origin,const Vec3& ray_dir,float& t,Vec3& normal,Vec3& intersect_pt)const 
 	{
 		if(m_aabb&&!m_aabb->intersectCheck(origin,ray_dir))
@@ -150,7 +155,23 @@ namespace zyk
 		for(int i=1;i<=mModel->numvertices;i++)
 			m_center+=Vec3(mModel->vertices[i*3],mModel->vertices[i*3+1],mModel->vertices[i*3+2]);
 		m_center/=mModel->numvertices;
-		calVertNormal(2);
+
+		if(!mModel->normals)
+			calVertNormal(2);
+		else
+		{
+			//normalize the normal
+			for(int i=1;i<=mModel->numnormals;i++)
+			{
+				float nx=mModel->normals[3*i];
+				float ny=mModel->normals[3*i+1];
+				float nz=mModel->normals[3*i+2];
+				float length=sqrt(nx*nx+ny*ny+nz*nz);
+				mModel->normals[3*i]=nx/length;
+				mModel->normals[3*i+1]=ny/length;
+				mModel->normals[3*i+2]=nz/length;
+			}
+		}
 		return true;
 	}
 
@@ -242,6 +263,18 @@ namespace zyk
 		m_aabb->top_pos=Vec3(xmax,ymax,zmax);
 	}
 
+	void TriMesh::reverseNormals()
+	{
+		if(!mModel->normals)
+			return;
+		for(int i=1;i<=mModel->numnormals;i++)
+		{
+			mModel->normals[3*i]*=-1;
+			mModel->normals[3*i+1]*=-1;
+			mModel->normals[3*i+2]*=-1;
+		}
+	}
+
 	void TriMesh::calVertNormal(int status)
 	{
 		if(!mModel)
@@ -268,7 +301,12 @@ namespace zyk
 
 			face_normal[i]=nor;
 		}
-
+		
+		if(mModel->normals)
+		{
+			free(mModel->normals);
+			mModel->normals=NULL;
+		}
 		mModel->numnormals=mModel->numvertices;
 		mModel->normals=(float*)malloc(sizeof(GLfloat)*3*(mModel->numnormals+1));
 		for(int i=1;i<=mModel->numvertices;i++)
@@ -306,6 +344,14 @@ namespace zyk
 		return m_center;
 	}
 
+	int TriMesh::getVertexNum()
+	{
+		if(!mModel)
+			return 0;
+		else
+			return mModel->numvertices;
+	}
+
 	void TriMesh::translate(const Vec3& trans)
 	{
 		if(!mModel)
@@ -317,6 +363,7 @@ namespace zyk
 			mModel->vertices[ind+1]+=trans[1];
 			mModel->vertices[ind+2]+=trans[2];
 		}
+		m_center+=trans;
 	}
 
 	void TriMesh::setNormal(float nx,float ny,float nz)

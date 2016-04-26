@@ -16,7 +16,7 @@ namespace zyk
 	{
 	public:
 		Object():m_material(NULL){}
-		virtual ~Object(){}
+		virtual ~Object();
 		virtual bool intersect(const Vec3& origin,const Vec3& dir,float& t,Vec3& normal,Vec3& intersect_pt)const=0;
 		virtual bool intersect(const Vec3& origin,const Vec3& dir,float& t)const=0;
 		void setMaterial(Material* mat) {assert(mat);m_material=mat;}
@@ -87,13 +87,16 @@ namespace zyk
 	{
 	public:
 		TriMesh(const std::string& name);
+		TriMesh();
 		~TriMesh();
 		bool importMesh(const std::string&filename);
 		void scaleMesh(const Vec3& scale);
 		Vec3 getCenter();
+		int getVertexNum();
 		void translate(const Vec3& trans);
 		void calOBB();
 		void calAABB();
+		void reverseNormals();
 		void setNormal(float nx,float ny,float nz);//we set all the vertices a same normal for some special case
 		const GLMmodel* getMesh()const{return mModel;}
 		GLMmodel* getMesh(){return mModel;}

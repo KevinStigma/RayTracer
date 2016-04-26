@@ -26,6 +26,7 @@ public:
 	zyk::Camera m_cam;
 	zyk::Light* mLights;
 	zyk::Material m_materials[MAX_MATERIAL];
+	int m_width_global,m_height_global;
 	int mLightNum;
 	int mMatNum;
 public:

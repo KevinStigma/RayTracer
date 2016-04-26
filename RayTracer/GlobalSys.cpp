@@ -3,7 +3,7 @@
 #include <algorithm>
 
 CGlobalSys *g_pGlobalSys = NULL;
-CGlobalSys::CGlobalSys():mLights(NULL),mLightNum(0)
+CGlobalSys::CGlobalSys():mLights(NULL),mLightNum(0),m_width_global(0),m_height_global(0)
 {
 	viewport_height=600;
 	viewport_width=800;
@@ -53,8 +53,10 @@ void set_material_from_file(std::ifstream&in,zyk::Material&material)
 		material.type=zyk::SOLID;
 	else if(tmp_value==1)
 		material.type=zyk::DIELECTRIC;
-	else
+	else if(tmp_value==2)
 		material.type=zyk::LIGHTSOURCE;
+	else if(tmp_value==3)
+		material.type=zyk::MIRROW;
 
 	in>>tmp_value;
 	in>>tmp_array[0]>>tmp_array[1]>>tmp_array[2];

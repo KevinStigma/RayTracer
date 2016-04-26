@@ -62,7 +62,7 @@ typedef Vec4* PointList;
 
 namespace zyk
 {
-	enum MaterialType {SOLID,DIELECTRIC,LIGHTSOURCE};
+	enum MaterialType {SOLID,DIELECTRIC,LIGHTSOURCE,MIRROW};
 	union UCHAR3
 	{
 		unsigned char m[3];
@@ -158,8 +158,8 @@ namespace zyk
 		int   iaux1, iaux2; // auxiliary vars for future expansion
 		float faux1, faux2;
 		TriMesh* light_source_mesh;
-		void getIlluminatinInfo(const Vec3& point,Vec3& light_dir,Vec4& light_intensity)const;
-		Vec3 getLightingDirection(const Vec3& point)const;
+		void getIlluminatinInfo(const Vec3& point,Vec3& light_dir,Vec4& light_intensity,Vec3& light_pos)const;
+		Vec3 getLightingDirection(const Vec3& point, Vec3&light_pos)const;
 		
 	public:
 		EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -323,7 +323,7 @@ namespace zyk
 		{
 			if(v(i)<0)
 				v(i)=0;
-			else if(v(i)>1)
+			else if(v(i)>1.f)
 				v(i)=1;
 		}
 	}

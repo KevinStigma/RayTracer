@@ -73,6 +73,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Calculagraph.cpp" />
     <ClCompile Include="GeneratedFiles\Debug\moc_raytracer.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </ClCompile>
@@ -122,6 +123,7 @@
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Calculagraph.h" />
     <ClInclude Include="GeneratedFiles\ui_raytracer.h" />
     <ClInclude Include="GlobalSys.h" />
     <ClInclude Include="ZYK\CPARSERV1.h" />

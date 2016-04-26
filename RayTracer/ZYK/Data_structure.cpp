@@ -140,9 +140,9 @@ namespace zyk
 
 	tag_Light::tag_Light():light_source_mesh(NULL){}
 
-	void Light::getIlluminatinInfo(const Vec3& point,Vec3& light_dir,Vec4& light_intensity)const
+	void Light::getIlluminatinInfo(const Vec3& point,Vec3& light_dir,Vec4& light_intensity,Vec3& light_pos)const
 	{
-		light_dir=getLightingDirection(point);
+		light_dir=getLightingDirection(point,light_pos);
 		if(type==DIRECTION_LIGHT)
 			light_intensity=Vec4(1.0,1.0,1.0,1.0);
 		else if(type==SPOT_LIGHT)
@@ -156,21 +156,33 @@ namespace zyk
 			light_intensity=Vec4(1.0,1.0,1.0,1.0);
 	}
 
-	Vec3 Light::getLightingDirection(const Vec3& point)const
+	Vec3 Light::getLightingDirection(const Vec3& point,Vec3& light_pos)const
 	{
 		if(type==DIRECTION_LIGHT)
 		{
+			light_pos=Vec3(0,0,0);
 			return dir;
 		}
 		else if(type==SPOT_LIGHT)
 		{
 			Vec3 light_vec=pos-point;
+			light_pos=pos;
 			return light_vec.normalized();
 		}
 		else if(type==AREA_LIGHT)
 		{
 			assert(light_source_mesh&&light_source_mesh->getOBB());
 			Vec3 rand_light_pos=light_source_mesh->getOBB()->getRandomPt();
+			light_pos=rand_light_pos;
+			/*int width_ind=g_pGlobalSys->m_width_global,height_ind=g_pGlobalSys->m_height_global;
+			int id=(height_ind*g_pGlobalSys->viewport_width+width_ind)*3;
+			g_pGlobalSys->m_rand_lighting_pos[id]=rand_light_pos(0);
+			g_pGlobalSys->m_rand_lighting_pos[id+1]=rand_light_pos(1);
+			g_pGlobalSys->m_rand_lighting_pos[id+2]=rand_light_pos(2);
+
+			g_pGlobalSys->m_shade_pos[id]=point(0);
+			g_pGlobalSys->m_shade_pos[id+1]=point(1);
+			g_pGlobalSys->m_shade_pos[id+2]=point(2);*/
 			return (rand_light_pos-point).normalized();
 		}
 		return Vec3(0,0,0);
