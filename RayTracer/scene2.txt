@@ -1,0 +1,31 @@
+10
+Mesh
+../data/scene/2/wall1.obj
+gray2
+Mesh
+../data/scene/2/wall2.obj
+gray2
+Mesh
+../data/scene/2/plate1.obj
+metal1
+Mesh
+../data/scene/2/plate2.obj
+metal2
+Mesh
+../data/scene/2/plate3.obj
+metal3
+Mesh
+../data/scene/2/plate4.obj
+metal4
+Sphere
+7.10389 6.43046 3.03575 0.897079
+light_source
+Sphere
+3.6344 6.43045 3.03575 0.60687
+light_source
+Sphere
+-0.0104812 6.43046 3.03574 0.334434
+light_source
+Sphere
+-3.36951 6.43046 3.03575 0.114867
+light_source

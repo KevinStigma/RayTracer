@@ -1,0 +1,25 @@
+8
+Mesh
+../data/scene/1/lightsource.obj
+light_source
+Mesh
+../data/scene/1/wall1.obj
+red
+Mesh
+../data/scene/1/wall2.obj
+gray
+Mesh
+../data/scene/1/wall3.obj
+gray
+Mesh
+../data/scene/1/wall5.obj
+gray
+Mesh
+../data/scene/1/wall4.obj
+blue
+Sphere
+-2.3852720 -3.4 10.43973 1.6
+mirrow
+Sphere
+2.24 -3.4 13.9258 1.6
+glass
