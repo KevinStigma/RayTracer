@@ -4,6 +4,7 @@
 
 namespace zyk
 {
+	int sceneId=2;
 	Object::~Object()
 	{}
 
@@ -109,9 +110,17 @@ namespace zyk
 			if(tri_intersect_test(origin,ray_dir,vVert,t,coord_para)&&t>0)
 			{
 				intersect_pt=origin+t*ray_dir;
+				if(sceneId==1)
+				{
 				//normal interpolation
 				normal=(1-coord_para(0)-coord_para(1))*vNormal[0]+
 					coord_para(0)*vNormal[1]+coord_para(1)*vNormal[2];
+				}
+				else
+				{
+					normal=(vVert[1]-vVert[0]).cross(vVert[2]-vVert[0]);
+					normal.normalize();
+				}
 				return true;
 			}
 		}
@@ -156,23 +165,22 @@ namespace zyk
 			m_center+=Vec3(mModel->vertices[i*3],mModel->vertices[i*3+1],mModel->vertices[i*3+2]);
 		m_center/=mModel->numvertices;
 
-		if(!mModel->normals)
-			calVertNormal(2);
-		else
-		{
-			//normalize the normal
-			for(int i=1;i<=mModel->numnormals;i++)
-			{
-				float nx=mModel->normals[3*i];
-				float ny=mModel->normals[3*i+1];
-				float nz=mModel->normals[3*i+2];
-				float length=sqrt(nx*nx+ny*ny+nz*nz);
-				mModel->normals[3*i]=nx/length;
-				mModel->normals[3*i+1]=ny/length;
-				mModel->normals[3*i+2]=nz/length;
-			}
-		}
+		//calVertNormal(2);
 		return true;
+	}
+
+	float TriMesh::calAverageRaius()
+	{
+		float r=0;
+		Vec3 center=getCenter();
+		for(int i=1;i<=mModel->numvertices;i++)
+		{
+			int index=i*3;
+			Vec3 vertex(mModel->vertices[index],mModel->vertices[index+1],
+				mModel->vertices[index+2]);
+			r+=(vertex-center).norm();
+		}
+		return r/mModel->numvertices;
 	}
 
 	void TriMesh::calOBB()
@@ -261,18 +269,6 @@ namespace zyk
 		m_aabb->ZL=(zmax-zmin)*0.5f;
 		m_aabb->bot_pos=Vec3(xmin,ymin,zmin);
 		m_aabb->top_pos=Vec3(xmax,ymax,zmax);
-	}
-
-	void TriMesh::reverseNormals()
-	{
-		if(!mModel->normals)
-			return;
-		for(int i=1;i<=mModel->numnormals;i++)
-		{
-			mModel->normals[3*i]*=-1;
-			mModel->normals[3*i+1]*=-1;
-			mModel->normals[3*i+2]*=-1;
-		}
 	}
 
 	void TriMesh::calVertNormal(int status)
@@ -368,11 +364,30 @@ namespace zyk
 
 	void TriMesh::setNormal(float nx,float ny,float nz)
 	{
+		if(!mModel)
+			return;
 		for(int i=1;i<=mModel->numnormals;i++)
 		{
 			mModel->normals[i*3]=nx;
 			mModel->normals[i*3+1]=ny;
 			mModel->normals[i*3+2]=nz;
+		}
+	}
+
+	void TriMesh::normalizeNormals()
+	{
+		if(!mModel)
+			return;
+		float nx,ny,nz,l;
+		for(int i=1;i<=mModel->numnormals;i++)
+		{
+			nx = mModel->normals[i*3];
+			ny = mModel->normals[i*3+1];
+			nz = mModel->normals[i*3+2];
+			l=sqrt(nx*nx+ny*ny+nz*nz);
+			mModel->normals[i*3]=nx/l;
+			mModel->normals[i*3+1]=ny/l;
+			mModel->normals[i*3+2]=nz/l;
 		}
 	}
 

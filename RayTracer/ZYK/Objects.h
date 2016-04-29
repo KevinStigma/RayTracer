@@ -93,11 +93,12 @@ namespace zyk
 		void scaleMesh(const Vec3& scale);
 		Vec3 getCenter();
 		int getVertexNum();
+		float calAverageRaius();
 		void translate(const Vec3& trans);
 		void calOBB();
 		void calAABB();
-		void reverseNormals();
 		void setNormal(float nx,float ny,float nz);//we set all the vertices a same normal for some special case
+		void normalizeNormals();
 		const GLMmodel* getMesh()const{return mModel;}
 		GLMmodel* getMesh(){return mModel;}
 		const AABB* getAABB()const{return m_aabb;}
@@ -126,5 +127,6 @@ namespace zyk
 	private:
 		Vec3 tri_pt[3];
 	};
+	extern int sceneId;
 };
 #endif

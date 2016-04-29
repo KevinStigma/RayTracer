@@ -57,6 +57,8 @@ void set_material_from_file(std::ifstream&in,zyk::Material&material)
 		material.type=zyk::LIGHTSOURCE;
 	else if(tmp_value==3)
 		material.type=zyk::MIRROW;
+	else if(tmp_value==4)
+		material.type=zyk::ANISOTROPY;
 
 	in>>tmp_value;
 	in>>tmp_array[0]>>tmp_array[1]>>tmp_array[2];
@@ -81,6 +83,14 @@ void set_material_from_file(std::ifstream&in,zyk::Material&material)
 
 	in>>tmp_value;
 	material.rei=tmp_value;
+
+	if(material.type==zyk::ANISOTROPY)
+	{
+		in>>tmp_value;
+		material.rough_exponent=tmp_value;
+		in>>tmp_value;
+		material.specular_ratio=tmp_value;
+	}
 }
 
 void CGlobalSys::load_Material(const char* txtName)

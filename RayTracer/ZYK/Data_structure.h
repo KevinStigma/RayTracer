@@ -62,7 +62,7 @@ typedef Vec4* PointList;
 
 namespace zyk
 {
-	enum MaterialType {SOLID,DIELECTRIC,LIGHTSOURCE,MIRROW};
+	enum MaterialType {SOLID,DIELECTRIC,LIGHTSOURCE,MIRROW,ANISOTROPY};
 	union UCHAR3
 	{
 		unsigned char m[3];
@@ -106,7 +106,7 @@ namespace zyk
 		// modelers use this format
 		// along with specular power
 
-
+		float rough_exponent;
 		Vec4 ra, rd, rs;       // the reflectivities/colors pre-
 		// multiplied, to more match our 
 		// definitions, each is basically
@@ -118,6 +118,7 @@ namespace zyk
 		Image texture;    // actual texture map (if any)
 		MaterialType type;
 		float rei; //refractive index
+		float specular_ratio;
 
 		int   iaux1, iaux2;      // auxiliary vars for future expansion
 		float faux1, faux2;

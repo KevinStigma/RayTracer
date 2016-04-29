@@ -12,7 +12,7 @@
 
 RayTracer::RayTracer(QWidget *parent)
 	: QMainWindow(parent),render_buffer(NULL),mRandGen(NULL),viewport_image(g_pGlobalSys->viewport_width,g_pGlobalSys->viewport_height,QImage::Format_RGB888),
-	draw_shadow(false),draw_reflect(true),mMax_depth(2),m_render_type(MC_PATH_TRACING),mSampleNum(64)
+	draw_shadow(false),draw_reflect(true),mMax_depth(2),m_render_type(MC_PATH_TRACING),mSampleNum(64),environment_color(0.0f,0.0f,0.0f,1.0f)
 {
 	ui.setupUi(this);
 	setFixedSize(1026,703);
@@ -22,11 +22,14 @@ RayTracer::RayTracer(QWidget *parent)
 	connect(ui.actionLoad_Scene,SIGNAL(triggered()),this,SLOT(loadScene()));
 	connect(ui.actionGeneral_RayTracing,SIGNAL(triggered()),this,SLOT(setGeneRayTracing()));
 	connect(ui.actionMC_PathTracing,SIGNAL(triggered()),this,SLOT(setMCPathTracing()));
+	connect(ui.actionScene1,SIGNAL(triggered()),this,SLOT(setScene1()));
+	connect(ui.actionScene2,SIGNAL(triggered()),this,SLOT(setScene2()));
+
 
 	ui.render_label->setFixedSize(g_pGlobalSys->viewport_width,g_pGlobalSys->viewport_height);
 	render_buffer=new zyk::UCHAR3[g_pGlobalSys->pixel_num];
 	mRandGen=new zyk::RandomGenerator;
-	initObjects();
+	//initObjects();
 	
 	initRenderBuffer(render_buffer);
 	renderViewport(render_buffer);
@@ -62,6 +65,30 @@ void RayTracer::setMCPathTracing()
 	std::cout<<"Render Type:Monte Carlo Path Tracing"<<std::endl;
 }
 
+void RayTracer::setScene1()
+{
+	ui.actionScene1->setChecked(true);
+	ui.actionScene2->setChecked(false);
+	std::cout<<"Scene1"<<std::endl;
+
+	ui.posXEdit->setText("0");ui.posYEdit->setText("0");ui.posZEdit->setText("30");
+	ui.viewXEdit->setText("0");ui.viewYEdit->setText("0");ui.viewZEdit->setText("-1");
+	ui.upXEdit->setText("0");ui.upYEdit->setText("1");ui.upZEdit->setText("0");
+	ui.envREdit->setText("0");ui.envGEdit->setText("0");ui.envBEdit->setText("0");
+}
+
+void RayTracer::setScene2()
+{
+	ui.actionScene1->setChecked(false);
+	ui.actionScene2->setChecked(true);
+	std::cout<<"Scene2"<<std::endl;
+
+	ui.posXEdit->setText("1.6");ui.posYEdit->setText("10");ui.posZEdit->setText("18");
+	ui.viewXEdit->setText("0");ui.viewYEdit->setText("-0.5");ui.viewZEdit->setText("-1");
+	ui.upXEdit->setText("0");ui.upYEdit->setText("1");ui.upZEdit->setText("0");
+	ui.envREdit->setText("0");ui.envGEdit->setText("0");ui.envBEdit->setText("0");
+}
+
 void RayTracer::loadParaFromUI()
 {
 	QString num[3];
@@ -73,7 +100,32 @@ void RayTracer::loadParaFromUI()
 	for(int i=0;i<3;i++)
 		pCam.pos[i]=num[i].toFloat();
 	pCam.backup_pos=pCam.pos;
-	pCam.reset_camera_matrix();
+
+	num[0]=ui.envREdit->text();
+	num[1]=ui.envGEdit->text();
+	num[2]=ui.envBEdit->text();
+	for(int i=0;i<3;i++)
+		environment_color(i)=num[i].toFloat();
+
+	num[0]=ui.viewXEdit->text();
+	num[1]=ui.viewYEdit->text();
+	num[2]=ui.viewZEdit->text();
+
+	for(int i=0;i<3;i++)
+		pCam.n[i]=num[i].toFloat();
+
+	num[0]=ui.upXEdit->text();
+	num[1]=ui.upYEdit->text();
+	num[2]=ui.upZEdit->text();
+
+	//up vector
+	for(int i=0;i<3;i++)
+		pCam.v[i]=num[i].toFloat();
+
+	pCam.n.normalize();
+	pCam.v.normalize();
+	pCam.u=pCam.n.cross(pCam.v);
+	pCam.v=pCam.u.cross(pCam.n);
 
 	mMax_depth=ui.depthEdit->text().toInt();
 	mSampleNum=ui.sampleEdit->text().toInt();
@@ -84,6 +136,7 @@ void RayTracer::loadParaFromUI()
 void RayTracer::renderScene()
 {
 	initRenderBuffer(render_buffer);
+	generateScene();
 	loadParaFromUI();	
 
 #ifdef RECORD_TIME
@@ -111,18 +164,10 @@ void RayTracer::initRenderBuffer(zyk::UCHAR3*buffer)
 	}
 }
 
-#define REFRAC_TEST
+//#define SCENE1
 void RayTracer::initObjects()
 {
-#ifndef REFRAC_TEST
-	m_objects.resize(2);
-
-	m_objects[0]=new zyk::Sphere(Vec3(-2.2,0,-5),2);
-	m_objects[0]->setMaterial(&g_pGlobalSys->m_materials[2]);
-
-	m_objects[1]=new zyk::Sphere(Vec3(0,0,1),1.5);
-	m_objects[1]->setMaterial(&g_pGlobalSys->m_materials[6]);
-#else
+#ifdef SCENE1
 	m_objects.resize(8);
 	std::vector<zyk::TriMesh*> meshes;
 	meshes.resize(6);
@@ -173,6 +218,61 @@ void RayTracer::initObjects()
 		meshes[i]->translate(trans_vec);
 
 	g_pGlobalSys->generateAreaLights(meshes[0]);
+#else
+	m_objects.resize(10);
+	std::vector<zyk::TriMesh*> meshes;
+	meshes.resize(6);
+
+	zyk::TriMesh* tri_mesh=new zyk::TriMesh("../data/scene/2/wall1.obj");
+	tri_mesh->setMaterial(g_pGlobalSys->getMaterialByName("gray2"));
+	m_objects[0]=tri_mesh;
+	meshes[0]=tri_mesh;
+
+	tri_mesh=new zyk::TriMesh("../data/scene/2/wall2.obj");
+	tri_mesh->setMaterial(g_pGlobalSys->getMaterialByName("gray2"));
+	m_objects[1]=tri_mesh;
+	meshes[1]=tri_mesh;
+
+	tri_mesh=new zyk::TriMesh("../data/scene/2/plate1.obj");
+	tri_mesh->setMaterial(g_pGlobalSys->getMaterialByName("mirrow"));
+	tri_mesh->normalizeNormals();
+	m_objects[2]=tri_mesh;
+	meshes[2]=tri_mesh;
+
+	tri_mesh=new zyk::TriMesh("../data/scene/2/plate2.obj");
+	tri_mesh->setMaterial(g_pGlobalSys->getMaterialByName("mirrow"));
+	tri_mesh->normalizeNormals();
+	m_objects[3]=tri_mesh;
+	meshes[3]=tri_mesh;
+
+	tri_mesh=new zyk::TriMesh("../data/scene/2/plate3.obj");
+	tri_mesh->setMaterial(g_pGlobalSys->getMaterialByName("mirrow"));
+	tri_mesh->normalizeNormals();
+	m_objects[4]=tri_mesh;
+	meshes[4]=tri_mesh;
+
+	tri_mesh=new zyk::TriMesh("../data/scene/2/plate4.obj");
+	tri_mesh->setMaterial(g_pGlobalSys->getMaterialByName("mirrow"));
+	tri_mesh->normalizeNormals();
+	m_objects[5]=tri_mesh;
+	meshes[5]=tri_mesh;
+
+	m_objects[6]=new zyk::Sphere(Vec3(7.10389,6.43046,3.03575),0.897079);
+	m_objects[6]->setMaterial(g_pGlobalSys->getMaterialByName("light_source"));
+
+	m_objects[7]=new zyk::Sphere(Vec3(3.6344,6.43045,3.03575),0.60687);
+	m_objects[7]->setMaterial(g_pGlobalSys->getMaterialByName("light_source"));
+
+	m_objects[8]=new zyk::Sphere(Vec3(-0.0104812,6.43046,3.03574),0.334434);
+	m_objects[8]->setMaterial(g_pGlobalSys->getMaterialByName("light_source"));
+
+	m_objects[9]=new zyk::Sphere(Vec3(-3.36951,6.43046,3.03575),0.114867);
+	m_objects[9]->setMaterial(g_pGlobalSys->getMaterialByName("light_source"));
+		
+	//Vec3 trans_vec(0.0f,-5.0f,-15.0f);//-5 -12
+	//for(int i=0;i<(int)meshes.size();i++)
+	//	meshes[i]->translate(trans_vec);
+
 #endif
 }
 
@@ -293,10 +393,19 @@ Vec3 RayTracer::getRayDirection(const zyk::Camera&pCam,float x,float y)
 {
 	static float inv_width=1.0f/pCam.viewport_width;
 	static float inv_height=1.0f/pCam.viewport_height;
+	
+	Vec3 x_world=pCam.u, y_world=pCam.v;
+	Vec3 view_plane_cent_w = pCam.pos+pCam.n*pCam.near_clip_z;
+	Vec3 plane_corner_pt=view_plane_cent_w-x_world*pCam.view_plane(1)+y_world*pCam.view_plane(2);
 
-	Vec3 pixel_pos(pCam.view_plane(0)+x*inv_width*pCam.view_width,
-		pCam.view_plane(2)-y*inv_height*pCam.view_height,
-		pCam.pos(2)-pCam.near_clip_z);
+	Vec3 pixel_pos=plane_corner_pt+x*inv_width*pCam.view_width*x_world-
+		y*inv_height*pCam.view_height*y_world;
+
+	
+	/*Vec3 pixel_pos(pCam.view_plane(0)+x*inv_width*pCam.view_width,
+	pCam.view_plane(2)-y*inv_height*pCam.view_height,
+	pCam.pos(2)-pCam.near_clip_z);*/
+	//std::cout<<pixel_pos<<std::endl;
 	return (pixel_pos-pCam.pos).normalized();
 }
 
@@ -420,6 +529,8 @@ Vec4 RayTracer::castRayShading_RayTracing(const Vec3& origin,const Vec3& ray_dir
 	}
 	else if(m_objects[near_obj_id]->getMaterial()->type==zyk::LIGHTSOURCE)
 		shade_color=Vec4(1,1,1,1);
+	else if(m_objects[near_obj_id]->getMaterial()->type==zyk::ANISOTROPY)
+		shade_color=Vec4(0.1,0.1,0.1,1.0);
 	return shade_color;
 }
 
@@ -450,27 +561,29 @@ Vec3 transCoordinate(const Vec3& normal,const Vec3&dir)
 }
 
 //TODO:make new struct IntersectionInfo to reduce the number of parameters of function 
+//and this code is too hard code and hacky,I should rewrite it to a more general version
 Vec4 RayTracer::raySahding_basedType(const zyk::Object* inter_object,const Vec3& inter_pt,const Vec3& inter_nor,
 	const Vec3& ray_dir,int depth,float input_rei)
 {
 	Vec4 shade_color;
-	if(inter_object->getMaterial()->type==zyk::SOLID)
+	const zyk::Material* obj_material=inter_object->getMaterial();
+	if(obj_material->type==zyk::SOLID)
 	{
 		float r1=mRandGen->getRand();
 		float r2=mRandGen->getRand();
 		Vec3 sample_dir=transCoordinate(inter_nor,uniformSampleHemisphere(r1,r2));
 
 		Vec4 c=castRayShading_McSampling(inter_pt+sample_dir*0.01,sample_dir,depth+1);
-		shade_color=zyk::dot_multV4(r1*c,inter_object->getMaterial()->rd);
+		shade_color=zyk::dot_multV4(r1*c,obj_material->rd);
 	}
-	else if(inter_object->getMaterial()->type==zyk::LIGHTSOURCE)
+	else if(obj_material->type==zyk::LIGHTSOURCE)
 		shade_color=Vec4(light_intensity,light_intensity,light_intensity,1);
-	else if(inter_object->getMaterial()->type==zyk::MIRROW)
+	else if(obj_material->type==zyk::MIRROW)
 	{
 		Vec3 reflect_dir=(ray_dir-2*ray_dir.dot(inter_nor)*inter_nor).normalized();
 		shade_color=castRayShading_McSampling(inter_pt+reflect_dir*0.01,reflect_dir,depth+1);
 	}
-	else if(inter_object->getMaterial()->type==zyk::DIELECTRIC)
+	else if(obj_material->type==zyk::DIELECTRIC)
 	{
 		float rei[2]={input_rei,inter_object->getMaterial()->rei};
 		if(FCMP(rei[0],rei[1])&&rei[0]>1.0f)// the ray is leaving out the dielectric
@@ -487,20 +600,40 @@ Vec4 RayTracer::raySahding_basedType(const zyk::Object* inter_object,const Vec3&
 		else
 			shade_color=getBlack();
 	}
+	else if(obj_material->type==zyk::ANISOTROPY)
+	{
+		float r=mRandGen->getRand();
+		if(r<obj_material->specular_ratio) //diffuse reflection
+		{
+			float r1=mRandGen->getRand();
+			float r2=mRandGen->getRand();
+			Vec3 sample_dir=transCoordinate(inter_nor,uniformSampleHemisphere(r1,r2));
+
+			Vec4 c=castRayShading_McSampling(inter_pt+sample_dir*0.01,sample_dir,depth+1);
+			shade_color=zyk::dot_multV4(r1*c,obj_material->rd);
+		}
+		else //specular reflection
+		{
+			Vec3 reflect_dir=(ray_dir-2*ray_dir.dot(inter_nor)*inter_nor).normalized();
+			Vec4 c=castRayShading_McSampling(inter_pt+reflect_dir*0.01,reflect_dir,depth+1);
+			shade_color=zyk::dot_multV4(c,obj_material->rs*obj_material->ks);
+		}
+	}
 	return shade_color;
 }
 
 Vec4 RayTracer::castRayShading_McSampling(const Vec3& origin,const Vec3& ray_dir,int depth,float input_rei)
 {
 	if(depth==mMax_depth+1)
-		return getBlack();
+		//return getBlack();
+		return environment_color;
 	
 	int near_obj_id=-1;
 	Vec3 inter_nor,inter_pt;
 	intersectionCheck(m_objects,origin,ray_dir,near_obj_id,inter_nor,inter_pt);
-
 	if(near_obj_id==-1)
-		return getBlack();
+		//return getBlack();
+		return environment_color;
 
 	Vec4 shade_color=raySahding_basedType(m_objects[near_obj_id],inter_pt,inter_nor,ray_dir,depth,input_rei);
 	return shade_color;
@@ -514,6 +647,21 @@ Vec4 RayTracer::shadeSinglePxiel_Genral(int x,int y)
 	return castRayShading_RayTracing(g_pGlobalSys->m_cam.pos,ray_dir,0);
 }
 
+//this function is only for debug
+Vec4 RayTracer::shadeSinglePxiel_Normal(int x,int y)
+{
+	Vec3 ray_dir=getRayDirection(g_pGlobalSys->m_cam,x+0.5f,y+0.5f);
+
+	int near_obj_id=-1;
+	Vec3 inter_nor,inter_pt;
+	intersectionCheck(m_objects,g_pGlobalSys->m_cam.pos,ray_dir,near_obj_id,inter_nor,inter_pt);
+
+	if(near_obj_id==-1)
+		return getBlack();
+	else
+		return Vec4(inter_nor(0),inter_nor(1),inter_nor(2),1);
+}
+
 Vec4 RayTracer::shadeSinglePixel_MC_Sampling(int x,int y)
 {
 	Vec4 shade_color=getBlack();
@@ -524,6 +672,17 @@ Vec4 RayTracer::shadeSinglePixel_MC_Sampling(int x,int y)
 	}
 	shade_color/=mSampleNum;
 	return shade_color;
+}
+
+Vec3 RayTracer::computeHalfVec(const zyk::Material* material)
+{
+	float exponent=material->rough_exponent;
+	float r1=mRandGen->getRand();
+	float r2=mRandGen->getRand();
+	float costheta = pow(r1,1.0f/(exponent+1));
+	float sintheta = sqrt(max(0.0f,1.0f-costheta*costheta));
+	float phi=r2*2.0f*M_PI;
+	return Vec3(sintheta*cosf(phi),costheta,sintheta*sinf(phi));//spherical direction
 }
 
 //#define ZDEBUG
@@ -541,12 +700,12 @@ void RayTracer::rayTracing(zyk::UCHAR3*buffer)
 		for(int j=0;j<v_cam.viewport_width;j++)
 		{	
 #ifdef ZDEBUG
-			int max_x=576,max_y=550,min_x=435,min_y=360;
+			/*int max_x=670,max_y=416,min_x=219,min_y=227;
 			if(!(min_x<=j&&j<=max_x&&min_y<=i&&i<=max_y))
-				continue;
-			/*int test_x=387,test_y=99;
-			if(!(j==test_x&&i==test_y))
 				continue;*/
+			int test_x=670,test_y=265;
+			if(!(j==test_x&&i==test_y))
+				continue;
 #endif		
 			Vec4 shade_color;
 			if(m_render_type==GENERAL_RAY_TRACING)
@@ -577,12 +736,37 @@ void RayTracer::drawReflectSet()
 	draw_reflect=ui.drawReflectCheck->isChecked();
 }
 
-void RayTracer::loadScene()
+//TODO:this function is too hard code, we should make it more general
+void RayTracer::generateScene()
 {
-	QString filename=QFileDialog::getOpenFileName(this,tr("Load Scene"),".",
-		"scene scripts(*.txt)", 0);
-	if(!filename.size())
-		return; 
+	extern int zyk::sceneId;
+	if(ui.actionScene1->isChecked())
+	{
+		zyk::sceneId=1;
+		loadScene("scene1.txt");
+		std::vector<zyk::TriMesh*> mesh_data(6);
+		Vec3 trans_vec(0.0f,-5.0f,12.0f);
+		for(int i=0;i<6;i++)
+		{
+			mesh_data[i]=dynamic_cast<zyk::TriMesh*>(m_objects[i]);
+			assert(mesh_data[i]);
+			mesh_data[i]->translate(trans_vec);
+		}
+		mesh_data[1]->setNormal(1,0,0);
+		mesh_data[2]->setNormal(0,-1,0);
+		mesh_data[3]->setNormal(0,0,1);
+		mesh_data[4]->setNormal(0,1,0);
+		mesh_data[5]->setNormal(-1,0,0);
+	}
+	else
+	{
+		zyk::sceneId=2;
+		loadScene("scene2.txt");
+	}
+}
+
+void RayTracer::loadScene(QString filename)
+{
 	std::ifstream in(filename.toStdWString());
 	if(!in.is_open())
 	{
@@ -593,8 +777,9 @@ void RayTracer::loadScene()
 	int n;
 	in>>n;
 	std::string object_name;
-	
+
 	int mat_id,i;
+	std::string mat_name;
 	for(i=0;i<(int)m_objects.size();i++)
 		delete m_objects[i];
 	m_objects.resize(n);
@@ -625,12 +810,20 @@ void RayTracer::loadScene()
 			std::cout<<"The Scene script has error!"<<std::endl;
 			break;
 		}
-		in>>mat_id;
-		m_objects[i]->setMaterial(&g_pGlobalSys->m_materials[mat_id]);
+		in>>mat_name;
+		m_objects[i]->setMaterial(g_pGlobalSys->getMaterialByName(mat_name));
 	}
 	if(i==n)
 		std::cout<<"Load scene successfully!"<<std::endl;
+}
 
+void RayTracer::loadScene()
+{
+	QString filename=QFileDialog::getOpenFileName(this,tr("Load Scene"),".",
+		"scene scripts(*.txt)", 0);
+	if(!filename.size())
+		return; 
+	loadScene(filename);
 }
 
 void RayTracer::renderTest()

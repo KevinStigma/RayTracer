@@ -3,7 +3,7 @@
 #include "zyk/Data_structure.h"
 #include<Eigen/StdVector>
 
-#define MAX_MATERIAL 10
+#define MAX_MATERIAL 20
 
 namespace zyk
 {

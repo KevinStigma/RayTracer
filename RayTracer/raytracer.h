@@ -22,14 +22,19 @@ class RayTracer : public QMainWindow
 public:
 	RayTracer(QWidget *parent = 0);
 	~RayTracer();
+	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
 public slots:
 	void renderScene(); 
 	void drawShadowSet();
 	void drawReflectSet();
 	void loadScene();
+	void loadScene(QString name);
+	void generateScene();
 	void setGeneRayTracing();
 	void setMCPathTracing();
+	void setScene1();
+	void setScene2();
 
 protected:
 	void keyPressEvent(QKeyEvent *e);
@@ -42,11 +47,13 @@ protected:
 	Vec3 getRayDirection(const zyk::Camera&pCam,float x,float y);
 	Vec3 getRayDirection_randSampling(const zyk::Camera&pCam,float x,float y);
 	void renderTest();
+	Vec3 computeHalfVec(const zyk::Material* material);
 	void fresnel(float cos1,float cos2,const float rei[],float &kr)const; 
 	bool refractRay(const Vec3& origin,const Vec3&incident_dir,const Vec3& normal,const float rei[],
 		Vec3& refract_dir,float& ref_weight)const;
 	
 	Vec4 shadeSinglePxiel_Genral(int x,int y);
+	Vec4 shadeSinglePxiel_Normal(int x,int y);
 	Vec4 shadeSinglePixel_MC_Sampling(int x,int y);
 
 	Vec4 castRayShading_RayTracing(const Vec3& origin,const Vec3& ray_dir,int depth,float input_rei=1.0f);
@@ -74,6 +81,7 @@ private:
 	int mMax_depth,mSampleNum;
 	Calculagraph mCalculagraph;
 	float light_intensity;
+	Vec4 environment_color;
 };
 
 #endif // RAYTRACER_H
