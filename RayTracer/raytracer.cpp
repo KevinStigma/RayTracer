@@ -560,6 +560,7 @@ Vec3 transCoordinate(const Vec3& normal,const Vec3&dir)
 	return trans_mat*dir;
 }
 
+#define BLINNGLOSSY
 //TODO:make new struct IntersectionInfo to reduce the number of parameters of function 
 //and this code is too hard code and hacky,I should rewrite it to a more general version
 Vec4 RayTracer::raySahding_basedType(const zyk::Object* inter_object,const Vec3& inter_pt,const Vec3& inter_nor,
@@ -602,6 +603,7 @@ Vec4 RayTracer::raySahding_basedType(const zyk::Object* inter_object,const Vec3&
 	}
 	else if(obj_material->type==zyk::ANISOTROPY)
 	{
+#ifndef BLINNGLOSSY
 		float r=mRandGen->getRand();
 		if(r<obj_material->specular_ratio) //diffuse reflection
 		{
@@ -618,6 +620,30 @@ Vec4 RayTracer::raySahding_basedType(const zyk::Object* inter_object,const Vec3&
 			Vec4 c=castRayShading_McSampling(inter_pt+reflect_dir*0.01,reflect_dir,depth+1);
 			shade_color=zyk::dot_multV4(c,obj_material->rs*obj_material->ks);
 		}
+#else
+		Vec3 h = transCoordinate(inter_nor,computeHalfVec(obj_material));
+		h.normalize();
+		Vec3 n = inter_nor;
+		Vec3 wo=-ray_dir;
+
+		if (h.dot(wo) <0.0f)
+			h = -h;	
+		if (n.dot(h) < 0.0f)
+			n = -n;
+		if (wo.dot(h) < 0.0f)
+			return getBlack();
+
+		Vec3  wi = h * (2 *wo.dot(h)) - wo;
+		float G = std::min<float>(1.0,
+			std::min<float>(2.0*n.dot(h)*n.dot(wo) / wo.dot(h),
+			2.0f*n.dot(h)*n.dot(wi) / wo.dot(h)));
+
+		float exponent=obj_material->rough_exponent;
+		float D = (exponent+ 2)*pow(h.dot(n), exponent) / (2 * M_PI);
+		Vec4 c=castRayShading_McSampling(inter_pt+wi*0.01,wi,depth+1);
+		Vec4 brdf=obj_material->rd*(D * G / (4 *n.dot(wo)*n.dot(wi)));
+		shade_color=zyk::dot_multV4(brdf,c)*max(0,n.dot(wi));
+#endif
 	}
 	return shade_color;
 }
@@ -625,17 +651,19 @@ Vec4 RayTracer::raySahding_basedType(const zyk::Object* inter_object,const Vec3&
 Vec4 RayTracer::castRayShading_McSampling(const Vec3& origin,const Vec3& ray_dir,int depth,float input_rei)
 {
 	if(depth==mMax_depth+1)
-		//return getBlack();
 		return environment_color;
 	
 	int near_obj_id=-1;
 	Vec3 inter_nor,inter_pt;
 	intersectionCheck(m_objects,origin,ray_dir,near_obj_id,inter_nor,inter_pt);
 	if(near_obj_id==-1)
-		//return getBlack();
 		return environment_color;
 
 	Vec4 shade_color=raySahding_basedType(m_objects[near_obj_id],inter_pt,inter_nor,ray_dir,depth,input_rei);
+	if(zyk::sceneId==2)
+	{
+		zyk::clip_0_to_1(shade_color);
+	}
 	return shade_color;
 }
 
@@ -703,7 +731,7 @@ void RayTracer::rayTracing(zyk::UCHAR3*buffer)
 			/*int max_x=670,max_y=416,min_x=219,min_y=227;
 			if(!(min_x<=j&&j<=max_x&&min_y<=i&&i<=max_y))
 				continue;*/
-			int test_x=670,test_y=265;
+			int test_x=318,test_y=202;
 			if(!(j==test_x&&i==test_y))
 				continue;
 #endif		
