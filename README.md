@@ -1,3 +1,11 @@
 #RayTracer
-It's a raytracer I implement.It is in the stage of programming now. I have implemented the reflection, refraction and shadowing. I begin to
-implement the Monte Carlo Path Tracing now.
+It's a raytracer I implement.It is in the stage of programming now. I have implemented the Monte Carlo Path Tracing for the project of course:
+Advanced Computer Graphics of Zhejiang University.  
+It is the scenes I rendered:  
+**Scene1, 10000 sampling**
+![Scene1 text](https://raw.githubusercontent.com/KevinStigma/RayTracer/master/data/screenshot/sample_10000.bmp)
+  
+**Scene2, 100 sampling**
+![Scene2 test](https://raw.githubusercontent.com/KevinStigma/RayTracer/master/data/screenshot/scene2_100_3.bmp)
+  
+Although now I have submit the code for the homework,the code is too hacky and ugly. It has much space to improvement. So I will take time to do some refractoring work later.
