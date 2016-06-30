@@ -13,7 +13,6 @@
 #include <QtWidgets/QAction>
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QButtonGroup>
-#include <QtWidgets/QCheckBox>
 #include <QtWidgets/QHeaderView>
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QLineEdit>
@@ -31,7 +30,7 @@ class Ui_RayTracerClass
 {
 public:
     QAction *actionLoad_Scene;
-    QAction *actionGeneral_RayTracing;
+    QAction *actionNormal_Rendering;
     QAction *actionMC_PathTracing;
     QAction *actionScene1;
     QAction *actionScene2;
@@ -46,8 +45,6 @@ public:
     QLabel *label_4;
     QLabel *label_5;
     QLabel *render_label;
-    QCheckBox *drawShadowCheck;
-    QCheckBox *drawReflectCheck;
     QLineEdit *depthEdit;
     QLabel *label_6;
     QLabel *label_7;
@@ -96,11 +93,11 @@ public:
         RayTracerClass->setFont(font);
         actionLoad_Scene = new QAction(RayTracerClass);
         actionLoad_Scene->setObjectName(QStringLiteral("actionLoad_Scene"));
-        actionGeneral_RayTracing = new QAction(RayTracerClass);
-        actionGeneral_RayTracing->setObjectName(QStringLiteral("actionGeneral_RayTracing"));
-        actionGeneral_RayTracing->setCheckable(true);
-        actionGeneral_RayTracing->setChecked(false);
-        actionGeneral_RayTracing->setEnabled(true);
+        actionNormal_Rendering = new QAction(RayTracerClass);
+        actionNormal_Rendering->setObjectName(QStringLiteral("actionNormal_Rendering"));
+        actionNormal_Rendering->setCheckable(true);
+        actionNormal_Rendering->setChecked(false);
+        actionNormal_Rendering->setEnabled(true);
         actionMC_PathTracing = new QAction(RayTracerClass);
         actionMC_PathTracing->setObjectName(QStringLiteral("actionMC_PathTracing"));
         actionMC_PathTracing->setCheckable(true);
@@ -124,7 +121,7 @@ public:
         label->setFont(font1);
         RenderButton = new QPushButton(centralWidget);
         RenderButton->setObjectName(QStringLiteral("RenderButton"));
-        RenderButton->setGeometry(QRect(880, 500, 81, 31));
+        RenderButton->setGeometry(QRect(880, 430, 81, 31));
         posXEdit = new QLineEdit(centralWidget);
         posXEdit->setObjectName(QStringLiteral("posXEdit"));
         posXEdit->setGeometry(QRect(860, 50, 31, 20));
@@ -155,16 +152,6 @@ public:
         render_label = new QLabel(centralWidget);
         render_label->setObjectName(QStringLiteral("render_label"));
         render_label->setGeometry(QRect(20, 10, 54, 12));
-        drawShadowCheck = new QCheckBox(centralWidget);
-        drawShadowCheck->setObjectName(QStringLiteral("drawShadowCheck"));
-        drawShadowCheck->setGeometry(QRect(850, 440, 131, 16));
-        drawShadowCheck->setFont(font1);
-        drawShadowCheck->setChecked(true);
-        drawReflectCheck = new QCheckBox(centralWidget);
-        drawReflectCheck->setObjectName(QStringLiteral("drawReflectCheck"));
-        drawReflectCheck->setGeometry(QRect(850, 470, 161, 16));
-        drawReflectCheck->setFont(font1);
-        drawReflectCheck->setChecked(true);
         depthEdit = new QLineEdit(centralWidget);
         depthEdit->setObjectName(QStringLiteral("depthEdit"));
         depthEdit->setGeometry(QRect(930, 300, 31, 20));
@@ -302,7 +289,7 @@ public:
         menuBar->addAction(menuRender_Type->menuAction());
         menuBar->addAction(menuScene->menuAction());
         menuFile->addAction(actionLoad_Scene);
-        menuRender_Type->addAction(actionGeneral_RayTracing);
+        menuRender_Type->addAction(actionNormal_Rendering);
         menuRender_Type->addAction(actionMC_PathTracing);
         menuScene->addAction(actionScene1);
         menuScene->addAction(actionScene2);
@@ -316,7 +303,7 @@ public:
     {
         RayTracerClass->setWindowTitle(QApplication::translate("RayTracerClass", "RayTracer", 0));
         actionLoad_Scene->setText(QApplication::translate("RayTracerClass", "Load Scene", 0));
-        actionGeneral_RayTracing->setText(QApplication::translate("RayTracerClass", "General RayTracing", 0));
+        actionNormal_Rendering->setText(QApplication::translate("RayTracerClass", "Normal Rendering", 0));
         actionMC_PathTracing->setText(QApplication::translate("RayTracerClass", "MC PathTracing", 0));
         actionScene1->setText(QApplication::translate("RayTracerClass", "scene1", 0));
         actionScene2->setText(QApplication::translate("RayTracerClass", "scene2", 0));
@@ -330,8 +317,6 @@ public:
         label_4->setText(QApplication::translate("RayTracerClass", ",", 0));
         label_5->setText(QApplication::translate("RayTracerClass", ",", 0));
         render_label->setText(QApplication::translate("RayTracerClass", "TextLabel", 0));
-        drawShadowCheck->setText(QApplication::translate("RayTracerClass", "Draw Shadow", 0));
-        drawReflectCheck->setText(QApplication::translate("RayTracerClass", "Draw Reflection", 0));
         depthEdit->setText(QApplication::translate("RayTracerClass", "7", 0));
         label_6->setText(QApplication::translate("RayTracerClass", "Depth", 0));
         label_7->setText(QApplication::translate("RayTracerClass", "Sample", 0));

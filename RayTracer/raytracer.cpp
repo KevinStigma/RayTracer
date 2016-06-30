@@ -14,16 +14,14 @@
 
 
 RayTracer::RayTracer(QWidget *parent)
-	: QMainWindow(parent),render_buffer(NULL),mRandGen(NULL),viewport_image(g_pGlobalSys->viewport_width,g_pGlobalSys->viewport_height,QImage::Format_RGB888),
-	draw_shadow(false),draw_reflect(true),m_render_type(MC_PATH_TRACING),mSampleNum(64)
+	: QMainWindow(parent),render_buffer(NULL),mRandGen(NULL),viewport_image(g_pGlobalSys->viewport_width,
+	g_pGlobalSys->viewport_height,QImage::Format_RGB888),m_render_type(MC_PATH_TRACING)
 {
 	ui.setupUi(this);
 	setFixedSize(1026,703);
 	connect(ui.RenderButton,SIGNAL(clicked()),this,SLOT(renderScene()));
-	connect(ui.drawShadowCheck,SIGNAL(clicked()),this,SLOT(drawShadowSet()));
-	connect(ui.drawReflectCheck,SIGNAL(clicked()),this,SLOT(drawReflectSet()));
 	connect(ui.actionLoad_Scene,SIGNAL(triggered()),this,SLOT(loadScene()));
-	connect(ui.actionGeneral_RayTracing,SIGNAL(triggered()),this,SLOT(setGeneRayTracing()));
+	connect(ui.actionNormal_Rendering, SIGNAL(triggered()), this, SLOT(setNormalRendering()));
 	connect(ui.actionMC_PathTracing,SIGNAL(triggered()),this,SLOT(setMCPathTracing()));
 	connect(ui.actionScene1,SIGNAL(triggered()),this,SLOT(setScene1()));
 	connect(ui.actionScene2,SIGNAL(triggered()),this,SLOT(setScene2()));
@@ -52,17 +50,17 @@ RayTracer::~RayTracer()
 	 }
 }
 
-void RayTracer::setGeneRayTracing()
+void RayTracer::setNormalRendering()
 {
-	ui.actionGeneral_RayTracing->setChecked(true);
+	ui.actionNormal_Rendering->setChecked(true);
 	ui.actionMC_PathTracing->setChecked(false);
-	m_render_type=GENERAL_RAY_TRACING;
-	std::cout<<"Render Type:General Ray Tracing"<<std::endl;
+	m_render_type=RENDER_NORMAL;
+	std::cout<<"Render Type:Normal Rendering"<<std::endl;
 }
 
 void RayTracer::setMCPathTracing()
 {
-	ui.actionGeneral_RayTracing->setChecked(false);
+	ui.actionNormal_Rendering->setChecked(false);
 	ui.actionMC_PathTracing->setChecked(true);
 	m_render_type=MC_PATH_TRACING;
 	std::cout<<"Render Type:Monte Carlo Path Tracing"<<std::endl;
@@ -131,7 +129,7 @@ void RayTracer::loadParaFromUI()
 	pCam.v=pCam.u.cross(pCam.n);
 
 	g_pGlobalSys->mMax_depth=ui.depthEdit->text().toInt();
-	mSampleNum=ui.sampleEdit->text().toInt();
+	g_pGlobalSys->mSampleNum=ui.sampleEdit->text().toInt();
 	g_pGlobalSys->light_intensity = ui.lightIntenEdit->text().toFloat();
 }
 
@@ -327,195 +325,10 @@ inline void fillColor_for_MC_Sampling(const Vec4&pColor,zyk::UCHAR3& final_color
 }
 
 
-void RayTracer::calPhongShading_oneLight(const zyk::Material& pMaterial,const zyk::Light& pLight,const Vec3& cam_pos,
-	const Vec3& shad_pos,const Vec3& pNormal,Vec4& pColor,bool calSpecular)
-{
-	using zyk::dot_multV4;
-	Vec3 view_dir=(cam_pos-shad_pos).normalized(),light_dir,light_pos;
-	Vec4 light_intensity;
-	pLight.getIlluminatinInfo(shad_pos,light_dir,light_intensity,light_pos);
-	Vec3 r_vec;
-	float diff_val=pNormal.dot(light_dir);
-	float spec_val;
-	if(diff_val<=0||!calSpecular)
-		spec_val=0;
-	else
-	{
-		r_vec=-light_dir+2*light_dir.dot(pNormal)*pNormal;
-		spec_val=pow(max(view_dir.dot(r_vec),0.0f),pMaterial.power);
-	}
-	//Phong Shading
-	pColor=dot_multV4(max(diff_val,0.0f)*light_intensity,pMaterial.rd*pMaterial.kd)
-		+dot_multV4(spec_val*light_intensity,pMaterial.rs*pMaterial.ks);
-}
-
-Vec4 RayTracer::calPhongShading_manyLights(const zyk::Material& pMaterial,const std::vector<bool>& is_lighting,
-	const Vec3& cam_pos,const Vec3& shad_pos,const Vec3& pNormal,bool calSpecular)
-{
-	assert(is_lighting.size()==g_pGlobalSys->mLightNum);
-	Vec4 shade_color=pMaterial.ra*pMaterial.ka;
-	for(int i=0;i<g_pGlobalSys->mLightNum;i++)
-	{
-		if(!is_lighting[i])
-			continue;
-		Vec4 lighting_color;
-		calPhongShading_oneLight(pMaterial,g_pGlobalSys->mLights[i],cam_pos,shad_pos,pNormal,lighting_color,calSpecular);
-		shade_color+=lighting_color;
-	}
-	zyk::clip_0_to_1(shade_color);
-	return shade_color;
-}
-
-void RayTracer::shadowCheck(int lightsNum,const zyk::Light* lights,const Vec3&intersect_pt,std::vector<bool>& is_lighting)
-{
-	assert(is_lighting.size()==lightsNum);
-	float t;
-	for(int l_ind=0;l_ind<lightsNum;l_ind++)
-	{
-		bool in_shadow=false;
-		Vec3 light_pos;
-		Vec3 light_dir=lights[l_ind].getLightingDirection(intersect_pt,light_pos);
-		for(int obj_id=0;obj_id<(int)m_objects.size();obj_id++)
-		{
-			bool is_intersect=m_objects[obj_id]->intersect(intersect_pt+light_dir*0.01f,light_dir,t);
-			if(is_intersect&&m_objects[obj_id]->getMaterial()->type!=zyk::AREA_LIGHT)
-			{
-				in_shadow=true;
-				break;
-			}
-		}
-		if(in_shadow)
-			is_lighting[l_ind]=false;
-	}
-}
-
-/**
-	get a 3D ray based on a given point
-*/
-Vec3 RayTracer::getRayDirection(const zyk::Camera&pCam,float x,float y)
-{
-	static float inv_width=1.0f/pCam.viewport_width;
-	static float inv_height=1.0f/pCam.viewport_height;
-	
-	Vec3 x_world=pCam.u, y_world=pCam.v;
-	Vec3 view_plane_cent_w = pCam.pos+pCam.n*pCam.near_clip_z;
-	Vec3 plane_corner_pt=view_plane_cent_w-x_world*pCam.view_plane(1)+y_world*pCam.view_plane(2);
-
-	Vec3 pixel_pos=plane_corner_pt+x*inv_width*pCam.view_width*x_world-
-		y*inv_height*pCam.view_height*y_world;
-
-	return (pixel_pos-pCam.pos).normalized();
-}
-
-Vec3 RayTracer::getRayDirection_randSampling(const zyk::Camera&pCam,float x,float y)
-{
-	//Here we select one point in the pixel randomly to cast a ray  
-	float r1=mRandGen->getRand();
-	float r2=mRandGen->getRand();
-
-	return getRayDirection(pCam,x+r1,y+r2);
-}
-
 inline void combineColor(float ref_para,const Vec4&pRefColor,Vec4& pShadeColor)
 {
 	pShadeColor=pShadeColor+ref_para*pRefColor;
 	zyk::clip_0_to_1(pShadeColor);
-}
-
-
-//TODO:Delete this code.
-Vec4 RayTracer::castRayShading_RayTracing(const Vec3& origin,const Vec3& ray_dir,int depth,float input_rei)
-{
-	/*if(depth==mMax_depth+1)
-		return getBlack();*/
-	int near_obj_id=-1;
-	Vec3 inter_nor,inter_pt;
-	//intersectionCheck(m_objects,origin,ray_dir,near_obj_id,inter_nor,inter_pt);
-
-	if(near_obj_id==-1)
-		return Vec4(0,0,0,1);
-	
-	Vec3 reflect_dir=(ray_dir-2*ray_dir.dot(inter_nor)*inter_nor).normalized();
-	Vec4 ref_color(0,0,0,1);
-	ref_color=castRayShading_RayTracing(inter_pt+reflect_dir*0.01,reflect_dir,depth+1,input_rei);
-	Vec4 shade_color;
-	
-	if(m_objects[near_obj_id]->getMaterial()->type==zyk::SOLID)
-	{
-		std::vector<bool> is_lighting(g_pGlobalSys->mLightNum,true);
-		if(draw_shadow)
-			shadowCheck(g_pGlobalSys->mLightNum,g_pGlobalSys->mLights,inter_pt,is_lighting);
-
-		shade_color=calPhongShading_manyLights(*m_objects[near_obj_id]->getMaterial(),is_lighting,g_pGlobalSys->m_cam.pos,
-			inter_pt,inter_nor);
-
-		float ref_para=m_objects[near_obj_id]->getMaterial()->kr;
-		combineColor(ref_para,ref_color,shade_color);	
-	}
-	else if(m_objects[near_obj_id]->getMaterial()->type==zyk::DIELECTRIC)
-	{
-		float rei[2]={input_rei,m_objects[near_obj_id]->getMaterial()->rei};
-		if(FCMP(rei[0],rei[1])&&rei[0]>1.0f)// the ray is leaving out the dielectric
-			rei[1]=1.0f;
-
-		Vec3 refra_dir;
-		float ref_weight,refra_weight;
-		//bool is_refract=refractRay(inter_pt,ray_dir,inter_nor,rei,refra_dir,ref_weight);
-		bool is_refract;
-		if(is_refract)
-		{
-			refra_weight=1-ref_weight;
-			float out_rei;
-			(typeid(*m_objects[near_obj_id])==typeid(zyk::Triangle))?out_rei=rei[0]:out_rei=rei[1];
-			Vec4 refra_color=castRayShading_RayTracing(inter_pt+refra_dir*0.01,refra_dir,depth+1,out_rei);
-			shade_color=ref_color*ref_weight+refra_color*refra_weight;
-		}
-		else
-			shade_color=ref_color;
-		zyk::clip_0_to_1(shade_color);
-	}
-	else if(m_objects[near_obj_id]->getMaterial()->type==zyk::LIGHTSOURCE)
-		shade_color=Vec4(1,1,1,1);
-	else if(m_objects[near_obj_id]->getMaterial()->type==zyk::ANISOTROPY)
-		shade_color=Vec4(0.1,0.1,0.1,1.0);
-	return shade_color;
-}
-
-
-Vec4 RayTracer::shadeSinglePxiel_Genral(int x,int y)
-{
-	//for each pixel, we only cast one ray here, so we set the position
-	//to cast in the center of the pixel
-	Vec3 ray_dir=getRayDirection(g_pGlobalSys->m_cam,x+0.5f,y+0.5f);
-	return castRayShading_RayTracing(g_pGlobalSys->m_cam.pos,ray_dir,0);
-}
-
-//this function is only for debug
-Vec4 RayTracer::shadeSinglePxiel_Normal(int x,int y)
-{
-	Vec3 ray_dir=getRayDirection(g_pGlobalSys->m_cam,x+0.5f,y+0.5f);
-
-	int near_obj_id=-1;
-	Vec3 inter_nor,inter_pt;
-	Intersection_Info inter_info;
-	g_pGlobalSys->intersectionCheck(m_objects,InputRay(g_pGlobalSys->m_cam.pos, ray_dir),inter_info);
-
-	if(inter_info.material==NULL)
-		return getBlack();
-	else
-		return Vec4(inter_info.inter_nor(0), inter_info.inter_nor(1), inter_info.inter_nor(2), 1);
-}
-
-Vec4 RayTracer::shadeSinglePixel_MC_Sampling(int x,int y)
-{
-	Vec4 shade_color=getBlack();
-	for(int i=0;i<mSampleNum;i++)
-	{
-		Vec3 ray_dir=getRayDirection_randSampling(g_pGlobalSys->m_cam,x,y);
-		shade_color += g_pGlobalSys->castRayShading_McSampling(m_objects,InputRay(g_pGlobalSys->m_cam.pos, ray_dir),0);
-	}
-	shade_color/=mSampleNum;
-	return shade_color;
 }
 
 //#define ZDEBUG
@@ -541,34 +354,23 @@ void RayTracer::rayTracing(zyk::UCHAR3*buffer)
 				continue;
 #endif		
 			Vec4 shade_color;
-			if(m_render_type==GENERAL_RAY_TRACING)
+			if (m_render_type == RENDER_NORMAL)
 			{
-				shade_color=shadeSinglePxiel_Genral(j,i);
+				shade_color = g_pGlobalSys->shadeSinglePxiel_Normal(m_objects, j, i);
 				zyk::clip_0_to_1(shade_color);
-				fillColor(shade_color,buffer[row_ind+j]);
+				fillColor(shade_color, buffer[row_ind + j]);
 			}
-			else if(m_render_type==MC_PATH_TRACING)
+			else if (m_render_type == MC_PATH_TRACING)
 			{
-				shade_color=shadeSinglePixel_MC_Sampling(j,i);
+				shade_color = g_pGlobalSys->shadeSinglePixel_MC_Sampling(m_objects,j, i);
 				zyk::clip_0_to_1(shade_color);
-				fillColor_for_MC_Sampling(shade_color,buffer[row_ind+j]);
+				fillColor_for_MC_Sampling(shade_color, buffer[row_ind + j]);
 			}
 		}
 		printf("%d ",i);
 	}
 	printf("\n");
 }
-
-void RayTracer::drawShadowSet()
-{
-	draw_shadow=ui.drawShadowCheck->isChecked();
-}
-
-void RayTracer::drawReflectSet()
-{
-	draw_reflect=ui.drawReflectCheck->isChecked();
-}
-
 //TODO:this function is too hard code, we should make it more general
 void RayTracer::generateScene()
 {
@@ -664,21 +466,6 @@ void RayTracer::loadScene()
 void RayTracer::renderTest()
 {
 	//here we write some code to test effects of rendering
-	zyk::Sphere* small_sphere=dynamic_cast<zyk::Sphere*>(m_objects[1]);
-	assert(small_sphere);
-	const float radius=4.5f;
-	QString filename("../data/test/test_pic");
-
-	for(int i=0;i<36;i++)
-	{
-		float radian=10.0f*i*DEG_TO_RAD;
-		small_sphere->center=Vec3(radius*cos(radian),0.0f,radius*sin(radian)-5);
-		initRenderBuffer(render_buffer);
-		rayTracing(render_buffer);
-		renderViewport(render_buffer);
-		if(viewport_image.save(filename+QString::number(i,10)+QString(".bmp")))
-			std::cout<<"save "<<i<<"'th test picture successfully!"<<std::endl;
-	}
 }
 
 void RayTracer::savePic()const

@@ -1,9 +1,9 @@
-﻿生成启动时间为 2016/6/30 9:56:26。
+﻿生成启动时间为 2016/6/30 17:07:53。
      1>项目“G:\My Documents\Visual Studio 2013\Projects\RayTracer\RayTracer\RayTracer\RayTracer.vcxproj”在节点 2 上(Build 个目标)。
      1>C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\V120\Microsoft.CppBuild.targets(935,5): warning MSB8027: Two or more files with the name of moc_raytracer.cpp will produce outputs to the same location. This can lead to an incorrect build result.  The files involved are GeneratedFiles\Debug\moc_raytracer.cpp, GeneratedFiles\Release\moc_raytracer.cpp.
      1>ClCompile:
-         G:\VS2013\VC\bin\CL.exe /c /I.\GeneratedFiles /I. /IG:\QT5.4X86\5.4\msvc2013_opengl\include /I.\GeneratedFiles\Debug /IG:\QT5.4X86\5.4\msvc2013_opengl\include\QtCore /IG:\QT5.4X86\5.4\msvc2013_opengl\include\QtGui /IG:\QT5.4X86\5.4\msvc2013_opengl\include\QtOpenGL /IG:\QT5.4X86\5.4\msvc2013_opengl\include\QtWidgets /Zi /nologo /W1 /WX- /Od /Oy- /D UNICODE /D WIN32 /D WIN64 /D QT_DLL /D QT_CORE_LIB /D QT_GUI_LIB /D QT_OPENGL_LIB /D QT_WIDGETS_LIB /Gm- /EHsc /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc120.pdb" /Gd /TP /analyze- /errorReport:prompt Material\LightSource.cpp
-         LightSource.cpp
+         G:\VS2013\VC\bin\CL.exe /c /I.\GeneratedFiles /I. /IG:\QT5.4X86\5.4\msvc2013_opengl\include /I.\GeneratedFiles\Debug /IG:\QT5.4X86\5.4\msvc2013_opengl\include\QtCore /IG:\QT5.4X86\5.4\msvc2013_opengl\include\QtGui /IG:\QT5.4X86\5.4\msvc2013_opengl\include\QtOpenGL /IG:\QT5.4X86\5.4\msvc2013_opengl\include\QtWidgets /Zi /nologo /W1 /WX- /Od /Oy- /D UNICODE /D WIN32 /D WIN64 /D QT_DLL /D QT_CORE_LIB /D QT_GUI_LIB /D QT_OPENGL_LIB /D QT_WIDGETS_LIB /Gm- /EHsc /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc120.pdb" /Gd /TP /analyze- /errorReport:prompt raytracer.cpp
+         raytracer.cpp
        Link:
          G:\VS2013\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"G:\My Documents\Visual Studio 2013\Projects\RayTracer\RayTracer\Win32\Debug\\RayTracer.exe" /NOLOGO /LIBPATH:G:\QT5.4X86\5.4\msvc2013_opengl\lib qtmaind.lib Qt5Cored.lib Qt5Guid.lib Qt5OpenGLd.lib opengl32.lib glu32.lib Qt5Widgetsd.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"G:\My Documents\Visual Studio 2013\Projects\RayTracer\RayTracer\Win32\Debug\RayTracer.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"G:\My Documents\Visual Studio 2013\Projects\RayTracer\RayTracer\Win32\Debug\RayTracer.lib" /MACHINE:X86 /SAFESEH Debug\Calculagraph.obj
          Debug\moc_raytracer.obj
@@ -28,4 +28,4 @@
 
 生成成功。
 
-已用时间 00:00:01.51
+已用时间 00:00:02.24

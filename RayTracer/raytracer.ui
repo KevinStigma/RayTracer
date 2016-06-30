@@ -43,7 +43,7 @@
     <property name="geometry">
      <rect>
       <x>880</x>
-      <y>500</y>
+      <y>430</y>
       <width>81</width>
       <height>31</height>
      </rect>
@@ -174,52 +174,6 @@
     </property>
     <property name="text">
      <string>TextLabel</string>
-    </property>
-   </widget>
-   <widget class="QCheckBox" name="drawShadowCheck">
-    <property name="geometry">
-     <rect>
-      <x>850</x>
-      <y>440</y>
-      <width>131</width>
-      <height>16</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <pointsize>10</pointsize>
-      <weight>75</weight>
-      <bold>true</bold>
-     </font>
-    </property>
-    <property name="text">
-     <string>Draw Shadow</string>
-    </property>
-    <property name="checked">
-     <bool>true</bool>
-    </property>
-   </widget>
-   <widget class="QCheckBox" name="drawReflectCheck">
-    <property name="geometry">
-     <rect>
-      <x>850</x>
-      <y>470</y>
-      <width>161</width>
-      <height>16</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <pointsize>10</pointsize>
-      <weight>75</weight>
-      <bold>true</bold>
-     </font>
-    </property>
-    <property name="text">
-     <string>Draw Reflection</string>
-    </property>
-    <property name="checked">
-     <bool>true</bool>
     </property>
    </widget>
    <widget class="QLineEdit" name="depthEdit">
@@ -750,7 +704,7 @@
     <property name="title">
      <string>Render Type</string>
     </property>
-    <addaction name="actionGeneral_RayTracing"/>
+    <addaction name="actionNormal_Rendering"/>
     <addaction name="actionMC_PathTracing"/>
    </widget>
    <widget class="QMenu" name="menuScene">
@@ -778,7 +732,7 @@
     <string>Load Scene</string>
    </property>
   </action>
-  <action name="actionGeneral_RayTracing">
+  <action name="actionNormal_Rendering">
    <property name="checkable">
     <bool>true</bool>
    </property>
@@ -789,7 +743,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>General RayTracing</string>
+    <string>Normal Rendering</string>
    </property>
   </action>
   <action name="actionMC_PathTracing">

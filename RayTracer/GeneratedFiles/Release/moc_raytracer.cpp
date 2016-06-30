@@ -20,7 +20,7 @@
 QT_BEGIN_MOC_NAMESPACE
 struct qt_meta_stringdata_RayTracer_t {
     QByteArrayData data[12];
-    char stringdata[136];
+    char stringdata[137];
 };
 #define QT_MOC_LITERAL(idx, ofs, len) \
     Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
@@ -37,15 +37,15 @@ QT_MOC_LITERAL(4, 37, 14), // "drawReflectSet"
 QT_MOC_LITERAL(5, 52, 9), // "loadScene"
 QT_MOC_LITERAL(6, 62, 4), // "name"
 QT_MOC_LITERAL(7, 67, 13), // "generateScene"
-QT_MOC_LITERAL(8, 81, 17), // "setGeneRayTracing"
-QT_MOC_LITERAL(9, 99, 16), // "setMCPathTracing"
-QT_MOC_LITERAL(10, 116, 9), // "setScene1"
-QT_MOC_LITERAL(11, 126, 9) // "setScene2"
+QT_MOC_LITERAL(8, 81, 18), // "setNormalRendering"
+QT_MOC_LITERAL(9, 100, 16), // "setMCPathTracing"
+QT_MOC_LITERAL(10, 117, 9), // "setScene1"
+QT_MOC_LITERAL(11, 127, 9) // "setScene2"
 
     },
     "RayTracer\0renderScene\0\0drawShadowSet\0"
     "drawReflectSet\0loadScene\0name\0"
-    "generateScene\0setGeneRayTracing\0"
+    "generateScene\0setNormalRendering\0"
     "setMCPathTracing\0setScene1\0setScene2"
 };
 #undef QT_MOC_LITERAL
@@ -101,7 +101,7 @@ void RayTracer::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, v
         case 3: _t->loadScene(); break;
         case 4: _t->loadScene((*reinterpret_cast< QString(*)>(_a[1]))); break;
         case 5: _t->generateScene(); break;
-        case 6: _t->setGeneRayTracing(); break;
+        case 6: _t->setNormalRendering(); break;
         case 7: _t->setMCPathTracing(); break;
         case 8: _t->setScene1(); break;
         case 9: _t->setScene2(); break;

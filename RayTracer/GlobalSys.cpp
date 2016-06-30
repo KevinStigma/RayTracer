@@ -230,6 +230,60 @@ void CGlobalSys::intersectionCheck(const std::vector<zyk::Object*>&p_objects,con
 	}
 }
 
+/**
+get a 3D ray based on a given point
+*/
+Vec3 CGlobalSys::getRayDirection(const zyk::Camera&pCam, float x, float y)
+{
+	static float inv_width = 1.0f / pCam.viewport_width;
+	static float inv_height = 1.0f / pCam.viewport_height;
+
+	Vec3 x_world = pCam.u, y_world = pCam.v;
+	Vec3 view_plane_cent_w = pCam.pos + pCam.n*pCam.near_clip_z;
+	Vec3 plane_corner_pt = view_plane_cent_w - x_world*pCam.view_plane(1) + y_world*pCam.view_plane(2);
+
+	Vec3 pixel_pos = plane_corner_pt + x*inv_width*pCam.view_width*x_world -
+		y*inv_height*pCam.view_height*y_world;
+
+	return (pixel_pos - pCam.pos).normalized();
+}
+
+Vec3 CGlobalSys::getRayDirection_randSampling(const zyk::Camera&pCam, float x, float y)
+{
+	//Here we select one point in the pixel randomly to cast a ray  
+	float r1 = mRandGen->getRand();
+	float r2 = mRandGen->getRand();
+
+	return getRayDirection(pCam, x + r1, y + r2);
+}
+
+Vec4 CGlobalSys::shadeSinglePxiel_Normal(const std::vector<zyk::Object*>&p_objects,int x, int y)
+{
+	Vec3 ray_dir = getRayDirection(g_pGlobalSys->m_cam, x + 0.5f, y + 0.5f);
+
+	int near_obj_id = -1;
+	Vec3 inter_nor, inter_pt;
+	Intersection_Info inter_info;
+	g_pGlobalSys->intersectionCheck(p_objects, InputRay(g_pGlobalSys->m_cam.pos, ray_dir), inter_info);
+
+	if (inter_info.material == NULL)
+		return Vec4(0,0,0,1);
+	else
+		return Vec4(inter_info.inter_nor(0), inter_info.inter_nor(1), inter_info.inter_nor(2), 1);
+}
+
+Vec4 CGlobalSys::shadeSinglePixel_MC_Sampling(const std::vector<zyk::Object*>&p_objects,int x, int y)
+{
+	Vec4 shade_color = Vec4(0,0,0,1);
+	for (int i = 0; i<mSampleNum; i++)
+	{
+		Vec3 ray_dir = getRayDirection_randSampling(g_pGlobalSys->m_cam, x, y);
+		shade_color += castRayShading_McSampling(p_objects, InputRay(g_pGlobalSys->m_cam.pos, ray_dir), 0);
+	}
+	shade_color /= mSampleNum;
+	return shade_color;
+}
+
 Vec4 CGlobalSys::castRayShading_McSampling(const std::vector<zyk::Object*>&p_objects,const InputRay&ray, int depth, float input_rei)
 {
 	if (depth == mMax_depth + 1)
