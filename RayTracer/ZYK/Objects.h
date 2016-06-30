@@ -21,6 +21,7 @@ namespace zyk
 		virtual bool intersect(const Vec3& origin,const Vec3& dir,float& t)const=0;
 		void setMaterial(Material* mat) {assert(mat);m_material=mat;}
 		const Material* getMaterial()const {return m_material;}
+		Material* getMaterial() { return m_material; }
 	protected:
 		Material* m_material;
 	};

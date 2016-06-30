@@ -35,5 +35,6 @@ namespace zyk
 	bool tri_intersect_test(const Vec3&origin,const Vec3& ray_dir,const Vec3 tri_pt[],float &t,Vec2& coord_para);
 	void PCAfor3D(const float pData[],int dataNum,Vec3& eigenValues,Mat3& eigenVector);
 	float calCocovariance(const MatrixXf&pMat,const std::vector<float>&pAvg,int x_id,int y_id);
+	Vec3 transCoordinate(const Vec3& normal, const Vec3&dir);
 }
 #endif

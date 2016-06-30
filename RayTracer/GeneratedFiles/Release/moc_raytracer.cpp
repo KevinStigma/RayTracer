@@ -1,7 +1,7 @@
 /****************************************************************************
 ** Meta object code from reading C++ file 'raytracer.h'
 **
-** Created by: The Qt Meta Object Compiler version 67 (Qt 5.2.0)
+** Created by: The Qt Meta Object Compiler version 67 (Qt 5.4.2)
 **
 ** WARNING! All changes made in this file will be lost!
 *****************************************************************************/
@@ -12,7 +12,7 @@
 #if !defined(Q_MOC_OUTPUT_REVISION)
 #error "The header file 'raytracer.h' doesn't include <QObject>."
 #elif Q_MOC_OUTPUT_REVISION != 67
-#error "This file was generated using the moc from 5.2.0. It"
+#error "This file was generated using the moc from 5.4.2. It"
 #error "cannot be used with the include files from this version of Qt."
 #error "(The moc has changed too much.)"
 #endif
@@ -20,32 +20,33 @@
 QT_BEGIN_MOC_NAMESPACE
 struct qt_meta_stringdata_RayTracer_t {
     QByteArrayData data[12];
-    char stringdata[137];
+    char stringdata[136];
 };
 #define QT_MOC_LITERAL(idx, ofs, len) \
     Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
-    offsetof(qt_meta_stringdata_RayTracer_t, stringdata) + ofs \
-        - idx * sizeof(QByteArrayData) \
+    qptrdiff(offsetof(qt_meta_stringdata_RayTracer_t, stringdata) + ofs \
+        - idx * sizeof(QByteArrayData)) \
     )
 static const qt_meta_stringdata_RayTracer_t qt_meta_stringdata_RayTracer = {
     {
-QT_MOC_LITERAL(0, 0, 9),
-QT_MOC_LITERAL(1, 10, 11),
-QT_MOC_LITERAL(2, 22, 0),
-QT_MOC_LITERAL(3, 23, 13),
-QT_MOC_LITERAL(4, 37, 14),
-QT_MOC_LITERAL(5, 52, 9),
-QT_MOC_LITERAL(6, 62, 4),
-QT_MOC_LITERAL(7, 67, 13),
-QT_MOC_LITERAL(8, 81, 17),
-QT_MOC_LITERAL(9, 99, 16),
-QT_MOC_LITERAL(10, 116, 9),
-QT_MOC_LITERAL(11, 126, 9)
+QT_MOC_LITERAL(0, 0, 9), // "RayTracer"
+QT_MOC_LITERAL(1, 10, 11), // "renderScene"
+QT_MOC_LITERAL(2, 22, 0), // ""
+QT_MOC_LITERAL(3, 23, 13), // "drawShadowSet"
+QT_MOC_LITERAL(4, 37, 14), // "drawReflectSet"
+QT_MOC_LITERAL(5, 52, 9), // "loadScene"
+QT_MOC_LITERAL(6, 62, 4), // "name"
+QT_MOC_LITERAL(7, 67, 13), // "generateScene"
+QT_MOC_LITERAL(8, 81, 17), // "setGeneRayTracing"
+QT_MOC_LITERAL(9, 99, 16), // "setMCPathTracing"
+QT_MOC_LITERAL(10, 116, 9), // "setScene1"
+QT_MOC_LITERAL(11, 126, 9) // "setScene2"
+
     },
     "RayTracer\0renderScene\0\0drawShadowSet\0"
     "drawReflectSet\0loadScene\0name\0"
     "generateScene\0setGeneRayTracing\0"
-    "setMCPathTracing\0setScene1\0setScene2\0"
+    "setMCPathTracing\0setScene1\0setScene2"
 };
 #undef QT_MOC_LITERAL
 
@@ -63,16 +64,16 @@ static const uint qt_meta_data_RayTracer[] = {
        0,       // signalCount
 
  // slots: name, argc, parameters, tag, flags
-       1,    0,   64,    2, 0x0a,
-       3,    0,   65,    2, 0x0a,
-       4,    0,   66,    2, 0x0a,
-       5,    0,   67,    2, 0x0a,
-       5,    1,   68,    2, 0x0a,
-       7,    0,   71,    2, 0x0a,
-       8,    0,   72,    2, 0x0a,
-       9,    0,   73,    2, 0x0a,
-      10,    0,   74,    2, 0x0a,
-      11,    0,   75,    2, 0x0a,
+       1,    0,   64,    2, 0x0a /* Public */,
+       3,    0,   65,    2, 0x0a /* Public */,
+       4,    0,   66,    2, 0x0a /* Public */,
+       5,    0,   67,    2, 0x0a /* Public */,
+       5,    1,   68,    2, 0x0a /* Public */,
+       7,    0,   71,    2, 0x0a /* Public */,
+       8,    0,   72,    2, 0x0a /* Public */,
+       9,    0,   73,    2, 0x0a /* Public */,
+      10,    0,   74,    2, 0x0a /* Public */,
+      11,    0,   75,    2, 0x0a /* Public */,
 
  // slots: parameters
     QMetaType::Void,
@@ -111,7 +112,7 @@ void RayTracer::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, v
 
 const QMetaObject RayTracer::staticMetaObject = {
     { &QMainWindow::staticMetaObject, qt_meta_stringdata_RayTracer.data,
-      qt_meta_data_RayTracer,  qt_static_metacall, 0, 0}
+      qt_meta_data_RayTracer,  qt_static_metacall, Q_NULLPTR, Q_NULLPTR}
 };
 
 
@@ -122,7 +123,7 @@ const QMetaObject *RayTracer::metaObject() const
 
 void *RayTracer::qt_metacast(const char *_clname)
 {
-    if (!_clname) return 0;
+    if (!_clname) return Q_NULLPTR;
     if (!strcmp(_clname, qt_meta_stringdata_RayTracer.stringdata))
         return static_cast<void*>(const_cast< RayTracer*>(this));
     return QMainWindow::qt_metacast(_clname);

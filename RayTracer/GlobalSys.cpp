@@ -1,9 +1,22 @@
 #include "GlobalSys.h"
 #include "zyk/Objects.h"
+#include "zyk/RandomGenerator.h"
+#include "Material\Solid.h"
+#include "Material\Anisotropy.h"
+#include "Material\Dielectric.h"
+#include "Material\LightSource.h"
+#include "Material\Mirror.h"
+#include "Material\Solid.h"
+#include "Material\Solid.h"
+#include "Material\Solid.h"
+#include "IntersectionInfo.h"
+#include "InputRay.h"
+#include <windows.h>
+#include <WinBase.h>
 #include <algorithm>
 
 CGlobalSys *g_pGlobalSys = NULL;
-CGlobalSys::CGlobalSys():mLights(NULL),mLightNum(0),m_width_global(0),m_height_global(0)
+CGlobalSys::CGlobalSys() :mLights(NULL), mLightNum(0), m_width_global(0), m_height_global(0), mRandGen(NULL)
 {
 	viewport_height=600;
 	viewport_width=800;
@@ -13,12 +26,20 @@ CGlobalSys::CGlobalSys():mLights(NULL),mLightNum(0),m_width_global(0),m_height_g
 	m_cam.reset_camera_matrix();
 	init_Light();
 	init_Material();
+	mRandGen = new zyk::RandomGenerator;
 }
 
 CGlobalSys::~CGlobalSys()
 {
 	SAFE_DELETE_ARRAY(mLights);
+	SAFE_DELETE(mRandGen);
+	for (int i = 0; i < mMatNum; i++)
+	{
+		SAFE_DELETE(m_materials[i]);
+	}
+	SAFE_DELETE_ARRAY(m_materials);
 }
+
 
 void CGlobalSys::init_Light()
 {
@@ -38,7 +59,43 @@ void CGlobalSys::init_Light()
 	mLights[1].dir=Vec3( 0.57735027,-0.57735027,-0.57735027).normalized();*/
 }
 
-void set_material_from_file(std::ifstream&in,zyk::Material&material)
+zyk::Material* createMaterial_baseType(int type_id)
+{
+	zyk::Material* material;
+	switch (type_id)
+	{
+	case 0:
+	{
+		material = new Solid();
+		material->type = zyk::SOLID;
+	}break;
+	case 1:
+	{
+		material = new Dielectric();
+		material->type = zyk::DIELECTRIC;
+	}break;
+	case 2:
+	{
+		material = new LightSource();
+		material->type = zyk::LIGHTSOURCE;
+	}break;
+	case 3:
+	{
+		material = new Mirror();
+		material->type = zyk::MIRROW;
+	}break;
+	case 4:
+	{
+		material = new Anistropy();
+		material->type = zyk::ANISOTROPY;
+	}break;
+	default:
+		material = NULL;
+	}
+	return material;
+}
+
+zyk::Material* set_material_from_file(std::ifstream&in)
 {
 	assert(in.is_open());
 	float tmp_array[3];
@@ -46,51 +103,48 @@ void set_material_from_file(std::ifstream&in,zyk::Material&material)
 	std::string tmp_str;
 	
 	in>>tmp_str;
-	material.name=tmp_str;
 
 	in>>tmp_value;
-	if(tmp_value==0)
-		material.type=zyk::SOLID;
-	else if(tmp_value==1)
-		material.type=zyk::DIELECTRIC;
-	else if(tmp_value==2)
-		material.type=zyk::LIGHTSOURCE;
-	else if(tmp_value==3)
-		material.type=zyk::MIRROW;
-	else if(tmp_value==4)
-		material.type=zyk::ANISOTROPY;
+	zyk::Material* material = createMaterial_baseType(tmp_value);
+	if (!material)
+	{
+		std::cout << "Error material type!" << std::endl;
+		return NULL;
+	}
+
+	material->name = tmp_str;
+	in>>tmp_value;
+	in>>tmp_array[0]>>tmp_array[1]>>tmp_array[2];
+	material->ka=tmp_value;
+	material->ra=Vec4(tmp_array[0],tmp_array[1],tmp_array[2],1.0f);
 
 	in>>tmp_value;
 	in>>tmp_array[0]>>tmp_array[1]>>tmp_array[2];
-	material.ka=tmp_value;
-	material.ra=Vec4(tmp_array[0],tmp_array[1],tmp_array[2],1.0f);
+	material->kd=tmp_value;
+	material->rd=Vec4(tmp_array[0],tmp_array[1],tmp_array[2],1.0f);
 
 	in>>tmp_value;
 	in>>tmp_array[0]>>tmp_array[1]>>tmp_array[2];
-	material.kd=tmp_value;
-	material.rd=Vec4(tmp_array[0],tmp_array[1],tmp_array[2],1.0f);
+	material->ks=tmp_value;
+	material->rs=Vec4(tmp_array[0],tmp_array[1],tmp_array[2],1.0f);
 
 	in>>tmp_value;
-	in>>tmp_array[0]>>tmp_array[1]>>tmp_array[2];
-	material.ks=tmp_value;
-	material.rs=Vec4(tmp_array[0],tmp_array[1],tmp_array[2],1.0f);
+	material->power=tmp_value;
 
 	in>>tmp_value;
-	material.power=tmp_value;
+	material->kr=tmp_value;
 
 	in>>tmp_value;
-	material.kr=tmp_value;
+	material->rei=tmp_value;
 
-	in>>tmp_value;
-	material.rei=tmp_value;
-
-	if(material.type==zyk::ANISOTROPY)
+	if(material->type==zyk::ANISOTROPY)
 	{
 		in>>tmp_value;
-		material.rough_exponent=tmp_value;
+		material->rough_exponent=tmp_value;
 		in>>tmp_value;
-		material.specular_ratio=tmp_value;
+		material->specular_ratio=tmp_value;
 	}
+	return material;
 }
 
 void CGlobalSys::load_Material(const char* txtName)
@@ -107,9 +161,9 @@ void CGlobalSys::load_Material(const char* txtName)
 		std::cout<<"Exceed the number of max material num!"<<std::endl;
 		return;
 	}
-
+	m_materials = new zyk::Material*[mMatNum];
 	for(int i=0;i<mMatNum;i++)
-		set_material_from_file(in,m_materials[i]);
+		m_materials[i] = set_material_from_file(in);
 
 	in.close();
 }
@@ -118,8 +172,8 @@ const zyk::Material* CGlobalSys::getMaterialByName(const std::string& name)const
 {
 	for(int i=0;i<mMatNum;i++)
 	{
-		if(name==m_materials[i].name)
-			return &m_materials[i];
+		if(name==m_materials[i]->name)
+			return m_materials[i];
 	}
 	return NULL;
 }
@@ -129,179 +183,9 @@ zyk::Material* CGlobalSys::getMaterialByName(const std::string& name)
 	return const_cast<zyk::Material*>(static_cast<const CGlobalSys&>(*this).getMaterialByName(name));
 }
 
-#define LOAD_MAT
 void CGlobalSys::init_Material()
 {
-
-#ifndef LOAD_MAT
-	float inv_255=1/255.0f;
-	float tmp_kr=0.4;
-	int index=0;
-	m_materials[index].name="gray";
-	m_materials[index].attr=2; 
-	m_materials[index].color.x=154;
-	m_materials[index].color.y=169;
-	m_materials[index].color.z=192;
-
-	m_materials[index].ks=m_materials[index].kd=m_materials[index].ka=1.0f;
-	m_materials[index].kr=tmp_kr;
-	m_materials[index].power=50.0f;
-	m_materials[index].ra=Vec4(m_materials[index].color.x*0.2f*inv_255,m_materials[index].color.y*0.2f*inv_255,m_materials[index].color.z*0.2f*inv_255,1.0f);
-	m_materials[index].rd=Vec4(m_materials[index].color.x*0.8f*inv_255,m_materials[index].color.y*0.8f*inv_255,m_materials[index].color.z*0.8f*inv_255,1.0f);
-	//m_materials[0].rs=Vec4(1.0f,1.0f,1.0f,1.0f);
-	m_materials[index].rs=Vec4(0.1f,0.1f,0.1f,1.0f);
-	m_materials[index].type=zyk::SOLID;
-	
-	index=1;
-	m_materials[index].name="yellow";
-	m_materials[index].attr=2; 
-	m_materials[index].color.x=245;
-	m_materials[index].color.y=241;
-	m_materials[index].color.z=134;
-
-	m_materials[index].ks=m_materials[index].kd=m_materials[index].ka=1.0f;
-	m_materials[index].kr=tmp_kr;
-	m_materials[index].power=50.0f;
-	m_materials[index].ra=Vec4(m_materials[index].color.x*0.3f*inv_255,m_materials[index].color.y*0.3f*inv_255,m_materials[index].color.z*0.3f*inv_255,1.0f);
-	m_materials[index].rd=Vec4(m_materials[index].color.x*0.7f*inv_255,m_materials[index].color.y*0.7f*inv_255,m_materials[index].color.z*0.7f*inv_255,1.0f);
-	//m_materials[1].rs=Vec4(1.0f,1.0f,1.0f,1.0f);
-	m_materials[index].rs=Vec4(0.1f,0.1f,0.1f,1.0f);
-	m_materials[index].type=zyk::SOLID;
-
-	index=2;
-	m_materials[index].name="purple";
-	m_materials[index].attr=2; 
-	m_materials[index].color.x=147;
-	m_materials[index].color.y=82;
-	m_materials[index].color.z=124;
-
-	m_materials[index].ks=m_materials[index].kd=m_materials[index].ka=1.0f;
-	m_materials[index].kr=tmp_kr;
-	m_materials[index].power=50.0f;
-	m_materials[index].ra=Vec4(m_materials[index].color.x*0.3f*inv_255,m_materials[index].color.y*0.3f*inv_255,m_materials[index].color.z*0.3f*inv_255,1.0f);
-	m_materials[index].rd=Vec4(m_materials[index].color.x*0.7f*inv_255,m_materials[index].color.y*0.7f*inv_255,m_materials[index].color.z*0.7f*inv_255,1.0f);
-	//m_materials[2].rs=Vec4(1.0f,1.0f,1.0f,1.0f);
-	m_materials[index].rs=Vec4(0.1f,0.1f,0.1f,1.0f);
-	m_materials[index].type=zyk::SOLID;
-
-	index=3;
-	m_materials[index].name="cyan";
-	m_materials[index].attr=2; 
-	m_materials[index].color.x=200;
-	m_materials[index].color.y=255;
-	m_materials[index].color.z=255;
-
-	m_materials[index].ks=m_materials[index].kd=m_materials[index].ka=1.0f;
-	m_materials[index].kr=tmp_kr;
-	m_materials[index].power=50.0f;
-	m_materials[index].ra=Vec4(m_materials[index].color.x*0.3f*inv_255,m_materials[index].color.y*0.3f*inv_255,m_materials[index].color.z*0.3f*inv_255,1.0f);
-	m_materials[index].rd=Vec4(m_materials[index].color.x*0.7f*inv_255,m_materials[index].color.y*0.7f*inv_255,m_materials[index].color.z*0.7f*inv_255,1.0f);
-	//m_materials[3].rs=Vec4(1.0f,1.0f,1.0f,1.0f);
-	m_materials[index].rs=Vec4(0.1f,0.1f,0.1f,1.0f);
-	m_materials[index].type=zyk::SOLID;
-
-	index=4;
-	m_materials[index].name="red";
-	m_materials[index].attr=2; 
-	m_materials[index].color.x=215;
-	m_materials[index].color.y=93;
-	m_materials[index].color.z=93;
-
-	m_materials[index].ks=m_materials[index].kd=m_materials[index].ka=1.0f;
-	m_materials[index].kr=tmp_kr;
-	m_materials[index].power=50.0f;
-	m_materials[index].ra=Vec4(m_materials[index].color.x*0.3f*inv_255,m_materials[index].color.y*0.3f*inv_255,m_materials[index].color.z*0.3f*inv_255,1.0f);
-	m_materials[index].rd=Vec4(m_materials[index].color.x*0.7f*inv_255,m_materials[index].color.y*0.7f*inv_255,m_materials[index].color.z*0.7f*inv_255,1.0f);
-	//m_materials[4].rs=Vec4(1.0f,1.0f,1.0f,1.0f);
-	m_materials[index].rs=Vec4(0.1f,0.1f,0.1f,1.0f);
-	m_materials[index].type=zyk::SOLID;
-
-	index=5;
-	m_materials[index].name="red";
-	m_materials[index].attr=2; 
-	m_materials[index].color.x=215;
-	m_materials[index].color.y=93;
-	m_materials[index].color.z=93;
-
-	m_materials[index].ks=m_materials[index].kd=m_materials[index].ka=1.0f;
-	m_materials[index].kr=tmp_kr;
-	m_materials[index].power=50.0f;
-	m_materials[index].ra=Vec4(m_materials[index].color.x*0.3f*inv_255,m_materials[index].color.y*0.3f*inv_255,m_materials[index].color.z*0.3f*inv_255,1.0f);
-	m_materials[index].rd=Vec4(m_materials[index].color.x*0.7f*inv_255,m_materials[index].color.y*0.7f*inv_255,m_materials[index].color.z*0.7f*inv_255,1.0f);
-	//m_materials[4].rs=Vec4(1.0f,1.0f,1.0f,1.0f);
-	m_materials[index].rs=Vec4(0.1f,0.1f,0.1f,1.0f);
-	m_materials[index].type=zyk::SOLID;
-
-	index=6;
-	m_materials[index].name="glass";
-	m_materials[index].attr=2; 
-	m_materials[index].color.x=0;
-	m_materials[index].color.y=0;
-	m_materials[index].color.z=0;
-
-	m_materials[index].ks=m_materials[index].kd=m_materials[index].ka=1.0f;
-	m_materials[index].kr=tmp_kr;
-	m_materials[index].power=50.0f;
-	m_materials[index].ra=Vec4(m_materials[index].color.x*0.3f*inv_255,m_materials[index].color.y*0.3f*inv_255,m_materials[index].color.z*0.3f*inv_255,1.0f);
-	m_materials[index].rd=Vec4(m_materials[index].color.x*0.7f*inv_255,m_materials[index].color.y*0.7f*inv_255,m_materials[index].color.z*0.7f*inv_255,1.0f);
-	//m_materials[4].rs=Vec4(1.0f,1.0f,1.0f,1.0f);
-	m_materials[index].rs=Vec4(0.0f,0.0f,0.0f,1.0f);
-	m_materials[index].type=zyk::DIELECTRIC;
-	m_materials[index].rei=1.157f;
-
-	index=7;
-	m_materials[index].name="light_source";
-	m_materials[index].attr=2; 
-	m_materials[index].color.x=0;
-	m_materials[index].color.y=0;
-	m_materials[index].color.z=0;
-
-	m_materials[index].ks=m_materials[index].kd=m_materials[index].ka=1.0f;
-	m_materials[index].kr=tmp_kr;
-	m_materials[index].power=50.0f;
-	m_materials[index].ra=Vec4(m_materials[index].color.x*0.3f*inv_255,m_materials[index].color.y*0.3f*inv_255,m_materials[index].color.z*0.3f*inv_255,1.0f);
-	m_materials[index].rd=Vec4(m_materials[index].color.x*0.7f*inv_255,m_materials[index].color.y*0.7f*inv_255,m_materials[index].color.z*0.7f*inv_255,1.0f);
-	//m_materials[4].rs=Vec4(1.0f,1.0f,1.0f,1.0f);
-	m_materials[index].rs=Vec4(0.0f,0.0f,0.0f,1.0f);
-	m_materials[index].type=zyk::LIGHTSOURCE;
-	m_materials[index].rei=1.157f;
-
-	index=8;
-	m_materials[index].name="red";
-	m_materials[index].attr=2; 
-	m_materials[index].color.x=255;
-	m_materials[index].color.y=0;
-	m_materials[index].color.z=0;
-
-	m_materials[index].ks=m_materials[index].kd=m_materials[index].ka=1.0f;
-	m_materials[index].kr=tmp_kr;
-	m_materials[index].power=50.0f;
-	m_materials[index].ra=Vec4(m_materials[index].color.x*0.3f*inv_255,m_materials[index].color.y*0.3f*inv_255,m_materials[index].color.z*0.3f*inv_255,1.0f);
-	m_materials[index].rd=Vec4(m_materials[index].color.x*0.7f*inv_255,m_materials[index].color.y*0.7f*inv_255,m_materials[index].color.z*0.7f*inv_255,1.0f);
-	//m_materials[4].rs=Vec4(1.0f,1.0f,1.0f,1.0f);
-	m_materials[index].rs=Vec4(0.0f,0.0f,0.0f,1.0f);
-	m_materials[index].type=zyk::SOLID;
-	m_materials[index].rei=1.157f;
-
-	index=9;
-	m_materials[index].name="blue";
-	m_materials[index].attr=2; 
-	m_materials[index].color.x=0;
-	m_materials[index].color.y=0;
-	m_materials[index].color.z=100;
-
-	m_materials[index].ks=m_materials[index].kd=m_materials[index].ka=1.0f;
-	m_materials[index].kr=tmp_kr;
-	m_materials[index].power=50.0f;
-	m_materials[index].ra=Vec4(m_materials[index].color.x*0.3f*inv_255,m_materials[index].color.y*0.3f*inv_255,m_materials[index].color.z*0.3f*inv_255,1.0f);
-	m_materials[index].rd=Vec4(m_materials[index].color.x*0.7f*inv_255,m_materials[index].color.y*0.7f*inv_255,m_materials[index].color.z*0.7f*inv_255,1.0f);
-	//m_materials[4].rs=Vec4(1.0f,1.0f,1.0f,1.0f);
-	m_materials[index].rs=Vec4(0.0f,0.0f,0.0f,1.0f);
-	m_materials[index].type=zyk::SOLID;
-	m_materials[index].rei=1.157f;
-#else
 	load_Material("material_script.txt");
-#endif
 }
 
 void CGlobalSys::generateAreaLights(zyk::TriMesh*pTri_mesh)
@@ -323,46 +207,43 @@ void CGlobalSys::generateAreaLights(zyk::TriMesh*pTri_mesh)
 	mLights[mLightNum].type=zyk::AREA_LIGHT;
 	mLights[mLightNum].light_source_mesh=pTri_mesh;
 	mLightNum++;
+}
 
-	//float coord_length[3]={obb->XL,obb->YL,obb->ZL};
-	//int index_list[3]={0,1,2};
-	////I don't know why this is false when I cancel the symbom '&' in the lambda function
-	//std::sort(index_list,index_list+3,[&coord_length](const int&a,const int&b)->int{return coord_length[a]>coord_length[b];});
 
-	//int division=5,grid_num=division*division;
-	//float grid_span[3];
-	//for(int i=0;i<3;i++)
-	//{
-	//	if(i!=2)
-	//		grid_span[i]=coord_length[index_list[i]]/division;
-	//	else
-	//		grid_span[i]=coord_length[index_list[i]];
-	//}
-	//
-	////copy the backup lights info into new array
-	//zyk::Light_Ptr light_backup=mLights;
-	//mLights=new zyk::Light[mLightNum+grid_num];
-	//for(int i=0;i<mLightNum;i++)
-	//	mLights[i]=light_backup[i];
-	//SAFE_DELETE_ARRAY(light_backup);
+void CGlobalSys::intersectionCheck(const std::vector<zyk::Object*>&p_objects,const InputRay&ray, Intersection_Info& inter_info)
+{
+	float t, min_t;
+	Vec3 tmp_nor;
+	Vec3 tmp_inter_pt;
+	for (int obj_id = 0; obj_id<(int)p_objects.size(); obj_id++)
+	{
+		bool is_intersect = p_objects[obj_id]->intersect(ray.origin, ray.dir, t, tmp_nor, tmp_inter_pt);
+		if (!is_intersect)
+			continue;
+		if (inter_info.material == NULL || t<min_t)
+		{
+			min_t = t;
+			inter_info.material = p_objects[obj_id]->getMaterial();
+			inter_info.inter_nor = tmp_nor;
+			inter_info.inter_pt = tmp_inter_pt;
+		}
+	}
+}
 
-	//int start_ind=mLightNum;
-	//for(int i=0;i<division;i++)
-	//	for(int j=0;j<division;j++)
-	//	{
-	//		Vec3 p1=obb->bot_pos;
-	//		Vec3 vz=obb->local_coord[index_list[2]]*grid_span[2];
-	//		Vec3 vx=(i*2+1)*obb->local_coord[index_list[0]]*grid_span[0];
-	//		Vec3 vy=(j*2+1)*obb->local_coord[index_list[1]]*grid_span[1];
-	//		Vec3 position=p1+vx+vy+vz;
-	//		mLights[start_ind+i*division+j].c_ambient=Vec4::Ones();
-	//		mLights[start_ind+i*division+j].c_diffuse=Vec4::Ones();
-	//		mLights[start_ind+i*division+j].c_specular=Vec4::Ones();
-	//		mLights[start_ind+i*division+j].pos=position;
-	//		mLights[start_ind+i*division+j].type=zyk::SPOT_LIGHT;
-	//		mLights[start_ind+i*division+j].kc=1.0f;
-	//		mLights[start_ind+i*division+j].kl=0.1f;
-	//		mLights[start_ind+i*division+j].kq=0.01f;
-	//	}
-	//mLightNum+=grid_num;
+Vec4 CGlobalSys::castRayShading_McSampling(const std::vector<zyk::Object*>&p_objects,const InputRay&ray, int depth, float input_rei)
+{
+	if (depth == mMax_depth + 1)
+		return environment_color;
+
+	//find the nearest object based on the casting ray and origin
+	int near_obj_id = -1;
+	Intersection_Info inter_info;
+	intersectionCheck(p_objects,ray, inter_info);
+	if (!inter_info.material)
+		return environment_color;
+
+	Vec4 shade_color = inter_info.material->render(p_objects, inter_info, ray.dir, depth, input_rei);
+	if (zyk::sceneId == 2)
+		zyk::clip_0_to_1(shade_color);
+	return shade_color;
 }

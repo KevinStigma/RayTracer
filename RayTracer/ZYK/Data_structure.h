@@ -60,8 +60,10 @@ typedef Matrix3f Mat3;
 typedef Matrix4f Mat4;
 typedef Vec4* PointList;
 
+struct Intersection_Info;
 namespace zyk
 {
+	class Object;
 	enum MaterialType {SOLID,DIELECTRIC,LIGHTSOURCE,MIRROW,ANISOTROPY};
 	union UCHAR3
 	{
@@ -127,7 +129,11 @@ namespace zyk
 		{
 			//texture=NULL;
 		}
-
+		virtual Vec4 render(const std::vector<zyk::Object*>&p_objects, const Intersection_Info& inter_info,
+			const Vec3& ray_dir, int depth, float input_rei){return Vec4(0, 0, 0, 1);}
+		virtual ~tag_Mat(){}
+	public:
+		EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 	}Material;
 	
 	enum Light_type

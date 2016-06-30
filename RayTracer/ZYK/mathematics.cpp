@@ -143,4 +143,21 @@ namespace zyk
 				eigenVector(i,j)=es.eigenvectors().col(j)(i).real();
 		}
 	}
+
+	//transform the vector dir(in local coordinate) into world coordinate based on 
+	//a normal vector
+	Vec3 transCoordinate(const Vec3& normal, const Vec3&dir)
+	{
+		Vec3 Nt, Nb;
+		if (std::fabs(normal(0))>std::fabs(normal(1)))
+			Nt = Vec3(normal(2), 0, -normal(0)).normalized();
+		else
+			Nt = Vec3(0, -normal(2), normal(1)).normalized();
+		Nb = normal.cross(Nt);
+		Mat3 trans_mat;
+		trans_mat.col(0) = Nt;
+		trans_mat.col(1) = normal;
+		trans_mat.col(2) = Nb;
+		return trans_mat*dir;
+	}
 }

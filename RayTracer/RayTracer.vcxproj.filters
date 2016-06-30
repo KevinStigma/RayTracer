@@ -36,6 +36,9 @@
     <Filter Include="ZYK">
       <UniqueIdentifier>{ec0cf8b0-6d0f-446c-b2a3-a93ad08d4df4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Materials">
+      <UniqueIdentifier>{5acad988-9848-43cd-955d-ae67a259bb0b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -79,6 +82,21 @@
     </ClCompile>
     <ClCompile Include="Calculagraph.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Material\Anisotropy.cpp">
+      <Filter>Materials</Filter>
+    </ClCompile>
+    <ClCompile Include="Material\Dielectric.cpp">
+      <Filter>Materials</Filter>
+    </ClCompile>
+    <ClCompile Include="Material\LightSource.cpp">
+      <Filter>Materials</Filter>
+    </ClCompile>
+    <ClCompile Include="Material\Mirror.cpp">
+      <Filter>Materials</Filter>
+    </ClCompile>
+    <ClCompile Include="Material\Solid.cpp">
+      <Filter>Materials</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -129,7 +147,25 @@
     <ClInclude Include="Calculagraph.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="IntersectInfo.h">
+    <ClInclude Include="Material\Anisotropy.h">
+      <Filter>Materials</Filter>
+    </ClInclude>
+    <ClInclude Include="Material\Dielectric.h">
+      <Filter>Materials</Filter>
+    </ClInclude>
+    <ClInclude Include="Material\LightSource.h">
+      <Filter>Materials</Filter>
+    </ClInclude>
+    <ClInclude Include="Material\Mirror.h">
+      <Filter>Materials</Filter>
+    </ClInclude>
+    <ClInclude Include="Material\Solid.h">
+      <Filter>Materials</Filter>
+    </ClInclude>
+    <ClInclude Include="IntersectionInfo.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="InputRay.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

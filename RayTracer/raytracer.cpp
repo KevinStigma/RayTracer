@@ -3,6 +3,8 @@
 #include "zyk/Objects.h"
 #include "zyk/mathematics.h"
 #include "zyk/RandomGenerator.h"
+#include "IntersectionInfo.h"
+#include "InputRay.h"
 #include <tchar.h>
 #include <typeinfo>
 #include <windows.h>
@@ -10,9 +12,10 @@
 #include <QFileDialog>
 #include <QString>
 
+
 RayTracer::RayTracer(QWidget *parent)
 	: QMainWindow(parent),render_buffer(NULL),mRandGen(NULL),viewport_image(g_pGlobalSys->viewport_width,g_pGlobalSys->viewport_height,QImage::Format_RGB888),
-	draw_shadow(false),draw_reflect(true),mMax_depth(2),m_render_type(MC_PATH_TRACING),mSampleNum(64),environment_color(0.0f,0.0f,0.0f,1.0f)
+	draw_shadow(false),draw_reflect(true),m_render_type(MC_PATH_TRACING),mSampleNum(64)
 {
 	ui.setupUi(this);
 	setFixedSize(1026,703);
@@ -105,7 +108,7 @@ void RayTracer::loadParaFromUI()
 	num[1]=ui.envGEdit->text();
 	num[2]=ui.envBEdit->text();
 	for(int i=0;i<3;i++)
-		environment_color(i)=num[i].toFloat();
+		g_pGlobalSys->environment_color(i)=num[i].toFloat();
 
 	num[0]=ui.viewXEdit->text();
 	num[1]=ui.viewYEdit->text();
@@ -127,9 +130,9 @@ void RayTracer::loadParaFromUI()
 	pCam.u=pCam.n.cross(pCam.v);
 	pCam.v=pCam.u.cross(pCam.n);
 
-	mMax_depth=ui.depthEdit->text().toInt();
+	g_pGlobalSys->mMax_depth=ui.depthEdit->text().toInt();
 	mSampleNum=ui.sampleEdit->text().toInt();
-	light_intensity=ui.lightIntenEdit->text().toFloat();
+	g_pGlobalSys->light_intensity = ui.lightIntenEdit->text().toFloat();
 }
 
 #define RECORD_TIME
@@ -401,11 +404,6 @@ Vec3 RayTracer::getRayDirection(const zyk::Camera&pCam,float x,float y)
 	Vec3 pixel_pos=plane_corner_pt+x*inv_width*pCam.view_width*x_world-
 		y*inv_height*pCam.view_height*y_world;
 
-	
-	/*Vec3 pixel_pos(pCam.view_plane(0)+x*inv_width*pCam.view_width,
-	pCam.view_plane(2)-y*inv_height*pCam.view_height,
-	pCam.pos(2)-pCam.near_clip_z);*/
-	//std::cout<<pixel_pos<<std::endl;
 	return (pixel_pos-pCam.pos).normalized();
 }
 
@@ -418,73 +416,21 @@ Vec3 RayTracer::getRayDirection_randSampling(const zyk::Camera&pCam,float x,floa
 	return getRayDirection(pCam,x+r1,y+r2);
 }
 
-
-void RayTracer::intersectionCheck(const std::vector<zyk::Object*>& pObjects,const Vec3& origin,const Vec3& ray_dir,
-	int& near_obj_id,Vec3& inter_pt_nor,Vec3&inter_pt)
-{
-	float t,min_t;
-	Vec3 tmp_nor;
-	Vec3 tmp_inter_pt;
-	for(int obj_id=0;obj_id<(int)pObjects.size();obj_id++)
-	{
-		bool is_intersect=pObjects[obj_id]->intersect(origin,ray_dir,t,tmp_nor,tmp_inter_pt);
-		if(!is_intersect)
-			continue;
-		if(near_obj_id==-1||t<min_t)
-		{
-			min_t=t;
-			near_obj_id=obj_id;
-			inter_pt_nor=tmp_nor;
-			inter_pt=tmp_inter_pt;
-		}
-	}
-}
-
 inline void combineColor(float ref_para,const Vec4&pRefColor,Vec4& pShadeColor)
 {
 	pShadeColor=pShadeColor+ref_para*pRefColor;
 	zyk::clip_0_to_1(pShadeColor);
 }
 
-void RayTracer::fresnel(float cos1,float cos2,const float rei[],float &kr)const
-{
-	//in fact, this function should check if there exists total internal reflection,
-	//but now that its father function refractRay has this detection, so I don't consider
-	//this situation in the function
-	float fr1,fr2;
-	fr1=(rei[1]*cos1-rei[0]*cos2)/(rei[1]*cos1+rei[0]*cos2);
-	fr2=(rei[0]*cos2-rei[1]*cos1)/(rei[0]*cos2+rei[1]*cos1);
-	kr=(fr1*fr1+fr2*fr2)*0.5f;
-}
 
-bool RayTracer::refractRay(const Vec3& origin,const Vec3&incident_dir,const Vec3& normal,const float rei[],
-	Vec3& refract_dir,float& ref_weight)const
-{
-	float eta=rei[0]/rei[1];
-	float c1=normal.dot(incident_dir),c2=1-eta*eta*(1-c1*c1);
-	if(c2<0)
-	{
-		ref_weight=1.0f;
-		return false;
-	}
-
-	Vec3 v_nor=normal;
-	if(c1<0.0f)
-		c1=-c1;
-	else
-		v_nor*=-1;
-	refract_dir=eta*incident_dir+(eta*c1-sqrt(c2))*v_nor;
-	fresnel(c1,fabs(refract_dir.dot(normal)),rei,ref_weight);
-	return true;
-}
-
+//TODO:Delete this code.
 Vec4 RayTracer::castRayShading_RayTracing(const Vec3& origin,const Vec3& ray_dir,int depth,float input_rei)
 {
-	if(depth==mMax_depth+1)
-		return getBlack();
+	/*if(depth==mMax_depth+1)
+		return getBlack();*/
 	int near_obj_id=-1;
 	Vec3 inter_nor,inter_pt;
-	intersectionCheck(m_objects,origin,ray_dir,near_obj_id,inter_nor,inter_pt);
+	//intersectionCheck(m_objects,origin,ray_dir,near_obj_id,inter_nor,inter_pt);
 
 	if(near_obj_id==-1)
 		return Vec4(0,0,0,1);
@@ -514,7 +460,8 @@ Vec4 RayTracer::castRayShading_RayTracing(const Vec3& origin,const Vec3& ray_dir
 
 		Vec3 refra_dir;
 		float ref_weight,refra_weight;
-		bool is_refract=refractRay(inter_pt,ray_dir,inter_nor,rei,refra_dir,ref_weight);
+		//bool is_refract=refractRay(inter_pt,ray_dir,inter_nor,rei,refra_dir,ref_weight);
+		bool is_refract;
 		if(is_refract)
 		{
 			refra_weight=1-ref_weight;
@@ -534,138 +481,6 @@ Vec4 RayTracer::castRayShading_RayTracing(const Vec3& origin,const Vec3& ray_dir
 	return shade_color;
 }
 
-Vec3 RayTracer::uniformSampleHemisphere(const float &r1,const float &r2)
-{
-	float sinTheta = sqrtf(1 - r1*r1); 
-	float phi = 2 * M_PI * r2; 
-	float x = sinTheta * cosf(phi); 
-	float z = sinTheta * sinf(phi); 
-	return Vec3(x,r1,z); 
-}
-
-//transform the vector dir(in local coordinate) into world coordinate based on 
-//a normal vector
-Vec3 transCoordinate(const Vec3& normal,const Vec3&dir)
-{
-	Vec3 Nt,Nb;
-	if (std::fabs(normal(0))>std::fabs(normal(1))) 
-		Nt = Vec3(normal(2), 0, -normal(0)).normalized(); 
-	else 
-		Nt = Vec3(0, -normal(2), normal(1)).normalized(); 
-	Nb = normal.cross(Nt); 	
-	Mat3 trans_mat;
-	trans_mat.col(0)=Nt;
-	trans_mat.col(1)=normal;
-	trans_mat.col(2)=Nb;
-	return trans_mat*dir;
-}
-
-#define BLINNGLOSSY
-//TODO:make new struct IntersectionInfo to reduce the number of parameters of function 
-//and this code is too hard code and hacky,I should rewrite it to a more general version
-Vec4 RayTracer::raySahding_basedType(const zyk::Object* inter_object,const Vec3& inter_pt,const Vec3& inter_nor,
-	const Vec3& ray_dir,int depth,float input_rei)
-{
-	Vec4 shade_color;
-	const zyk::Material* obj_material=inter_object->getMaterial();
-	if(obj_material->type==zyk::SOLID)
-	{
-		float r1=mRandGen->getRand();
-		float r2=mRandGen->getRand();
-		Vec3 sample_dir=transCoordinate(inter_nor,uniformSampleHemisphere(r1,r2));
-
-		Vec4 c=castRayShading_McSampling(inter_pt+sample_dir*0.01,sample_dir,depth+1);
-		shade_color=zyk::dot_multV4(r1*c,obj_material->rd);
-	}
-	else if(obj_material->type==zyk::LIGHTSOURCE)
-		shade_color=Vec4(light_intensity,light_intensity,light_intensity,1);
-	else if(obj_material->type==zyk::MIRROW)
-	{
-		Vec3 reflect_dir=(ray_dir-2*ray_dir.dot(inter_nor)*inter_nor).normalized();
-		shade_color=castRayShading_McSampling(inter_pt+reflect_dir*0.01,reflect_dir,depth+1);
-	}
-	else if(obj_material->type==zyk::DIELECTRIC)
-	{
-		float rei[2]={input_rei,inter_object->getMaterial()->rei};
-		if(FCMP(rei[0],rei[1])&&rei[0]>1.0f)// the ray is leaving out the dielectric
-			rei[1]=1.0f;
-
-		Vec3 refra_dir;
-		float ref_weight,refra_weight;
-		bool is_refract=refractRay(inter_pt,ray_dir,inter_nor,rei,refra_dir,ref_weight);
-		if(is_refract)
-		{
-			float out_rei=rei[1];
-			shade_color=castRayShading_McSampling(inter_pt+refra_dir*0.01,refra_dir,depth+1,out_rei);
-		}
-		else
-			shade_color=getBlack();
-	}
-	else if(obj_material->type==zyk::ANISOTROPY)
-	{
-#ifndef BLINNGLOSSY
-		float r=mRandGen->getRand();
-		if(r<obj_material->specular_ratio) //diffuse reflection
-		{
-			float r1=mRandGen->getRand();
-			float r2=mRandGen->getRand();
-			Vec3 sample_dir=transCoordinate(inter_nor,uniformSampleHemisphere(r1,r2));
-
-			Vec4 c=castRayShading_McSampling(inter_pt+sample_dir*0.01,sample_dir,depth+1);
-			shade_color=zyk::dot_multV4(r1*c,obj_material->rd);
-		}
-		else //specular reflection
-		{
-			Vec3 reflect_dir=(ray_dir-2*ray_dir.dot(inter_nor)*inter_nor).normalized();
-			Vec4 c=castRayShading_McSampling(inter_pt+reflect_dir*0.01,reflect_dir,depth+1);
-			shade_color=zyk::dot_multV4(c,obj_material->rs*obj_material->ks);
-		}
-#else
-		Vec3 h = transCoordinate(inter_nor,computeHalfVec(obj_material));
-		h.normalize();
-		Vec3 n = inter_nor;
-		Vec3 wo=-ray_dir;
-
-		if (h.dot(wo) <0.0f)
-			h = -h;	
-		if (n.dot(h) < 0.0f)
-			n = -n;
-		if (wo.dot(h) < 0.0f)
-			return getBlack();
-
-		Vec3  wi = h * (2 *wo.dot(h)) - wo;
-		float G = std::min<float>(1.0,
-			std::min<float>(2.0*n.dot(h)*n.dot(wo) / wo.dot(h),
-			2.0f*n.dot(h)*n.dot(wi) / wo.dot(h)));
-
-		float exponent=obj_material->rough_exponent;
-		float D = (exponent+ 2)*pow(h.dot(n), exponent) / (2 * M_PI);
-		Vec4 c=castRayShading_McSampling(inter_pt+wi*0.01,wi,depth+1);
-		Vec4 brdf=obj_material->rd*(D * G / (4 *n.dot(wo)*n.dot(wi)));
-		shade_color=zyk::dot_multV4(brdf,c)*max(0,n.dot(wi));
-#endif
-	}
-	return shade_color;
-}
-
-Vec4 RayTracer::castRayShading_McSampling(const Vec3& origin,const Vec3& ray_dir,int depth,float input_rei)
-{
-	if(depth==mMax_depth+1)
-		return environment_color;
-	
-	int near_obj_id=-1;
-	Vec3 inter_nor,inter_pt;
-	intersectionCheck(m_objects,origin,ray_dir,near_obj_id,inter_nor,inter_pt);
-	if(near_obj_id==-1)
-		return environment_color;
-
-	Vec4 shade_color=raySahding_basedType(m_objects[near_obj_id],inter_pt,inter_nor,ray_dir,depth,input_rei);
-	if(zyk::sceneId==2)
-	{
-		zyk::clip_0_to_1(shade_color);
-	}
-	return shade_color;
-}
 
 Vec4 RayTracer::shadeSinglePxiel_Genral(int x,int y)
 {
@@ -682,12 +497,13 @@ Vec4 RayTracer::shadeSinglePxiel_Normal(int x,int y)
 
 	int near_obj_id=-1;
 	Vec3 inter_nor,inter_pt;
-	intersectionCheck(m_objects,g_pGlobalSys->m_cam.pos,ray_dir,near_obj_id,inter_nor,inter_pt);
+	Intersection_Info inter_info;
+	g_pGlobalSys->intersectionCheck(m_objects,InputRay(g_pGlobalSys->m_cam.pos, ray_dir),inter_info);
 
-	if(near_obj_id==-1)
+	if(inter_info.material==NULL)
 		return getBlack();
 	else
-		return Vec4(inter_nor(0),inter_nor(1),inter_nor(2),1);
+		return Vec4(inter_info.inter_nor(0), inter_info.inter_nor(1), inter_info.inter_nor(2), 1);
 }
 
 Vec4 RayTracer::shadeSinglePixel_MC_Sampling(int x,int y)
@@ -696,21 +512,10 @@ Vec4 RayTracer::shadeSinglePixel_MC_Sampling(int x,int y)
 	for(int i=0;i<mSampleNum;i++)
 	{
 		Vec3 ray_dir=getRayDirection_randSampling(g_pGlobalSys->m_cam,x,y);
-		shade_color+=castRayShading_McSampling(g_pGlobalSys->m_cam.pos,ray_dir,0);
+		shade_color += g_pGlobalSys->castRayShading_McSampling(m_objects,InputRay(g_pGlobalSys->m_cam.pos, ray_dir),0);
 	}
 	shade_color/=mSampleNum;
 	return shade_color;
-}
-
-Vec3 RayTracer::computeHalfVec(const zyk::Material* material)
-{
-	float exponent=material->rough_exponent;
-	float r1=mRandGen->getRand();
-	float r2=mRandGen->getRand();
-	float costheta = pow(r1,1.0f/(exponent+1));
-	float sintheta = sqrt(max(0.0f,1.0f-costheta*costheta));
-	float phi=r2*2.0f*M_PI;
-	return Vec3(sintheta*cosf(phi),costheta,sintheta*sinf(phi));//spherical direction
 }
 
 //#define ZDEBUG
@@ -795,7 +600,8 @@ void RayTracer::generateScene()
 
 void RayTracer::loadScene(QString filename)
 {
-	std::ifstream in(filename.toStdWString());
+	std::wstring fname = filename.toStdWString();
+	std::ifstream in(fname);
 	if(!in.is_open())
 	{
 		std::cout<<"Can't open the file!"<<std::endl;
@@ -843,6 +649,7 @@ void RayTracer::loadScene(QString filename)
 	}
 	if(i==n)
 		std::cout<<"Load scene successfully!"<<std::endl;
+	in.close();
 }
 
 void RayTracer::loadScene()
