@@ -13,6 +13,7 @@
 #include <QtWidgets/QAction>
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QButtonGroup>
+#include <QtWidgets/QComboBox>
 #include <QtWidgets/QHeaderView>
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QLineEdit>
@@ -76,6 +77,8 @@ public:
     QLineEdit *envREdit;
     QLineEdit *envBEdit;
     QLabel *label_24;
+    QComboBox *thread_select;
+    QLabel *label_25;
     QMenuBar *menuBar;
     QMenu *menuFile;
     QMenu *menuRender_Type;
@@ -121,7 +124,7 @@ public:
         label->setFont(font1);
         RenderButton = new QPushButton(centralWidget);
         RenderButton->setObjectName(QStringLiteral("RenderButton"));
-        RenderButton->setGeometry(QRect(880, 430, 81, 31));
+        RenderButton->setGeometry(QRect(880, 480, 81, 31));
         posXEdit = new QLineEdit(centralWidget);
         posXEdit->setObjectName(QStringLiteral("posXEdit"));
         posXEdit->setGeometry(QRect(860, 50, 31, 20));
@@ -164,22 +167,22 @@ public:
         label_6->setFont(font3);
         label_7 = new QLabel(centralWidget);
         label_7->setObjectName(QStringLiteral("label_7"));
-        label_7->setGeometry(QRect(860, 340, 61, 21));
+        label_7->setGeometry(QRect(860, 330, 61, 21));
         label_7->setFont(font3);
         sampleEdit = new QLineEdit(centralWidget);
         sampleEdit->setObjectName(QStringLiteral("sampleEdit"));
-        sampleEdit->setGeometry(QRect(930, 340, 31, 20));
+        sampleEdit->setGeometry(QRect(930, 330, 31, 20));
         label_8 = new QLabel(centralWidget);
         label_8->setObjectName(QStringLiteral("label_8"));
-        label_8->setGeometry(QRect(860, 370, 51, 21));
+        label_8->setGeometry(QRect(860, 360, 51, 21));
         label_8->setFont(font3);
         label_9 = new QLabel(centralWidget);
         label_9->setObjectName(QStringLiteral("label_9"));
-        label_9->setGeometry(QRect(860, 390, 91, 21));
+        label_9->setGeometry(QRect(860, 380, 91, 21));
         label_9->setFont(font3);
         lightIntenEdit = new QLineEdit(centralWidget);
         lightIntenEdit->setObjectName(QStringLiteral("lightIntenEdit"));
-        lightIntenEdit->setGeometry(QRect(930, 370, 31, 21));
+        lightIntenEdit->setGeometry(QRect(930, 360, 31, 21));
         label_10 = new QLabel(centralWidget);
         label_10->setObjectName(QStringLiteral("label_10"));
         label_10->setGeometry(QRect(840, 80, 101, 16));
@@ -267,6 +270,13 @@ public:
         label_24->setObjectName(QStringLiteral("label_24"));
         label_24->setGeometry(QRect(840, 250, 16, 16));
         label_24->setFont(font2);
+        thread_select = new QComboBox(centralWidget);
+        thread_select->setObjectName(QStringLiteral("thread_select"));
+        thread_select->setGeometry(QRect(930, 420, 41, 22));
+        label_25 = new QLabel(centralWidget);
+        label_25->setObjectName(QStringLiteral("label_25"));
+        label_25->setGeometry(QRect(870, 420, 51, 21));
+        label_25->setFont(font3);
         RayTracerClass->setCentralWidget(centralWidget);
         menuBar = new QMenuBar(RayTracerClass);
         menuBar->setObjectName(QStringLiteral("menuBar"));
@@ -348,6 +358,15 @@ public:
         envREdit->setText(QApplication::translate("RayTracerClass", "0", 0));
         envBEdit->setText(QApplication::translate("RayTracerClass", "0", 0));
         label_24->setText(QApplication::translate("RayTracerClass", "(", 0));
+        thread_select->clear();
+        thread_select->insertItems(0, QStringList()
+         << QApplication::translate("RayTracerClass", "1", 0)
+         << QApplication::translate("RayTracerClass", "2", 0)
+         << QApplication::translate("RayTracerClass", "3", 0)
+         << QApplication::translate("RayTracerClass", "4", 0)
+         << QApplication::translate("RayTracerClass", "5", 0)
+        );
+        label_25->setText(QApplication::translate("RayTracerClass", "Thread", 0));
         menuFile->setTitle(QApplication::translate("RayTracerClass", "File", 0));
         menuRender_Type->setTitle(QApplication::translate("RayTracerClass", "Render Type", 0));
         menuScene->setTitle(QApplication::translate("RayTracerClass", "Scene", 0));

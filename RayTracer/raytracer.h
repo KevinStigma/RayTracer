@@ -3,6 +3,8 @@
 
 #include <QtWidgets/QMainWindow>
 #include <QKeyEvent>
+#include <atomic>
+#include <thread>
 #include "ui_raytracer.h"
 #include "zyk/Data_structure.h"
 #include "Calculagraph.h"
@@ -39,25 +41,28 @@ protected:
 	void keyPressEvent(QKeyEvent *e);
 	void initRenderBuffer(zyk::UCHAR3*buffer);
 	void loadParaFromUI();
+	void updateThread();
 	void initObjects();
 	void outputTimeRecordInfo(int depth,const std::string& str);
 	void renderViewport(zyk::UCHAR3*buffer);
-	void rayTracing(zyk::UCHAR3*buffer);
+	void rayTracing(zyk::UCHAR3*buffer, int start_col, int end_col);
 	void renderTest();
+	void statistical_work();
 	
 	Vec4 shadeSinglePixel_MC_Sampling(int x,int y);
 
 	void savePic()const;//save current picture in the data folder
 
 private:
+	std::vector<std::thread> m_thread_list;
 	zyk::RandomGenerator* mRandGen;
 	Ui::RayTracerClass ui;
 	zyk::UCHAR3* render_buffer;
 	QImage viewport_image;
 	std::vector<zyk::Object*> m_objects;
 	RenderType m_render_type;
-	
 	Calculagraph mCalculagraph;
+	static std::atomic_int computed_col;
 };
 
 #endif // RAYTRACER_H

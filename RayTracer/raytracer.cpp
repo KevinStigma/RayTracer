@@ -12,10 +12,10 @@
 #include <QFileDialog>
 #include <QString>
 
-
+std::atomic_int RayTracer::computed_col{0};
 RayTracer::RayTracer(QWidget *parent)
 	: QMainWindow(parent),render_buffer(NULL),mRandGen(NULL),viewport_image(g_pGlobalSys->viewport_width,
-	g_pGlobalSys->viewport_height,QImage::Format_RGB888),m_render_type(MC_PATH_TRACING)
+	g_pGlobalSys->viewport_height, QImage::Format_RGB888), m_render_type(MC_PATH_TRACING)
 {
 	ui.setupUi(this);
 	setFixedSize(1026,703);
@@ -26,11 +26,9 @@ RayTracer::RayTracer(QWidget *parent)
 	connect(ui.actionScene1,SIGNAL(triggered()),this,SLOT(setScene1()));
 	connect(ui.actionScene2,SIGNAL(triggered()),this,SLOT(setScene2()));
 
-
 	ui.render_label->setFixedSize(g_pGlobalSys->viewport_width,g_pGlobalSys->viewport_height);
 	render_buffer=new zyk::UCHAR3[g_pGlobalSys->pixel_num];
 	mRandGen=new zyk::RandomGenerator;
-	//initObjects();
 	
 	initRenderBuffer(render_buffer);
 	renderViewport(render_buffer);
@@ -48,6 +46,23 @@ RayTracer::~RayTracer()
 	 {
 		 SAFE_DELETE(m_objects[i]);
 	 }
+}
+
+inline void fillColor(const Vec4&pColor, zyk::UCHAR3& final_color)
+{
+	final_color.x = pColor(0)*255.f + 0.5f;
+	final_color.y = pColor(1)*255.f + 0.5f;
+	final_color.z = pColor(2)*255.f + 0.5f;
+}
+
+inline void fillColor_for_MC_Sampling(const Vec4&pColor, zyk::UCHAR3& final_color)
+{
+	for (int i = 0; i<3; i++)
+	{
+		int c = int(pow(pColor[i], 0.4545f)*255.0f + 0.5f);
+		c = (c>255) ? 255 : c;
+		final_color.m[i] = c;
+	}
 }
 
 void RayTracer::setNormalRendering()
@@ -78,6 +93,15 @@ void RayTracer::setScene1()
 	ui.envREdit->setText("0");ui.envGEdit->setText("0");ui.envBEdit->setText("0");
 }
 
+void RayTracer::statistical_work()
+{
+	while (computed_col < g_pGlobalSys->viewport_height)
+	{
+		system("cls");
+		printf("%.2f%%\n", (float)computed_col / (float)g_pGlobalSys->viewport_height*100.0f);
+	}
+}
+
 void RayTracer::setScene2()
 {
 	ui.actionScene1->setChecked(false);
@@ -88,6 +112,27 @@ void RayTracer::setScene2()
 	ui.viewXEdit->setText("0");ui.viewYEdit->setText("-0.5");ui.viewZEdit->setText("-1");
 	ui.upXEdit->setText("0");ui.upYEdit->setText("1");ui.upZEdit->setText("0");
 	ui.envREdit->setText("0");ui.envGEdit->setText("0");ui.envBEdit->setText("0");
+}
+
+void RayTracer::updateThread()
+{
+	int thread_num = ui.thread_select->currentText().toInt();
+	/*if (thread_num == (int)m_thread_list.size()-1)
+		return;*/
+	m_thread_list.clear();
+	
+	int stride = g_pGlobalSys->m_cam.viewport_height / thread_num;
+	int start_col=0,end_col=0;
+	
+	for (int i = 0; i < thread_num; i++)
+	{
+		end_col=((i==thread_num-1)?g_pGlobalSys->viewport_height:start_col + stride);
+		m_thread_list.push_back(std::thread(&RayTracer::rayTracing, this, render_buffer, start_col, end_col));
+		start_col = end_col;
+	}
+	//the last thread is responsible for the statistical work 
+	m_thread_list.push_back(std::thread(&RayTracer::statistical_work, this));
+	computed_col = 0;
 }
 
 void RayTracer::loadParaFromUI()
@@ -139,11 +184,14 @@ void RayTracer::renderScene()
 	initRenderBuffer(render_buffer);
 	generateScene();
 	loadParaFromUI();	
-
+	updateThread();
+	
 #ifdef RECORD_TIME
 	DWORD start_time=GetTickCount();
 #endif
-	rayTracing(render_buffer);
+	for (int i = 0; i < (int)m_thread_list.size(); i++)
+		m_thread_list[i].join();
+
 	renderViewport(render_buffer);
 	ui.render_label->setPixmap(QPixmap::fromImage(viewport_image));
 	ui.render_label->show();
@@ -307,70 +355,14 @@ void RayTracer::renderViewport(zyk::UCHAR3*buffer)
 	}
 }
 
-inline void fillColor(const Vec4&pColor,zyk::UCHAR3& final_color)
-{
-	final_color.x=pColor(0)*255.f+0.5f;
-	final_color.y=pColor(1)*255.f+0.5f;
-	final_color.z=pColor(2)*255.f+0.5f;
-}
-
-inline void fillColor_for_MC_Sampling(const Vec4&pColor,zyk::UCHAR3& final_color)
-{
-	for(int i=0;i<3;i++)
-	{
-		int c=int(pow(pColor[i],0.4545f)*255.0f+0.5f);
-		c=(c>255)?255:c;
-		final_color.m[i]=c;
-	}
-}
-
-
 inline void combineColor(float ref_para,const Vec4&pRefColor,Vec4& pShadeColor)
 {
 	pShadeColor=pShadeColor+ref_para*pRefColor;
 	zyk::clip_0_to_1(pShadeColor);
 }
 
-//#define ZDEBUG
-void RayTracer::rayTracing(zyk::UCHAR3*buffer)
-{
-	if(!m_objects.size())
-		return;
-	for(int i=0;i<(int)m_objects.size();i++)
-		assert(m_objects[i]&&m_objects[i]->getMaterial());
 
-	const zyk::Camera& v_cam=g_pGlobalSys->m_cam;
-	for(int i=0;i<v_cam.viewport_height;i++)
-	{
-		int row_ind=i*v_cam.viewport_width;
-		for(int j=0;j<v_cam.viewport_width;j++)
-		{	
-#ifdef ZDEBUG
-			/*int max_x=670,max_y=416,min_x=219,min_y=227;
-			if(!(min_x<=j&&j<=max_x&&min_y<=i&&i<=max_y))
-				continue;*/
-			int test_x=318,test_y=202;
-			if(!(j==test_x&&i==test_y))
-				continue;
-#endif		
-			Vec4 shade_color;
-			if (m_render_type == RENDER_NORMAL)
-			{
-				shade_color = g_pGlobalSys->shadeSinglePxiel_Normal(m_objects, j, i);
-				zyk::clip_0_to_1(shade_color);
-				fillColor(shade_color, buffer[row_ind + j]);
-			}
-			else if (m_render_type == MC_PATH_TRACING)
-			{
-				shade_color = g_pGlobalSys->shadeSinglePixel_MC_Sampling(m_objects,j, i);
-				zyk::clip_0_to_1(shade_color);
-				fillColor_for_MC_Sampling(shade_color, buffer[row_ind + j]);
-			}
-		}
-		printf("%d ",i);
-	}
-	printf("\n");
-}
+
 //TODO:this function is too hard code, we should make it more general
 void RayTracer::generateScene()
 {
@@ -461,6 +453,37 @@ void RayTracer::loadScene()
 	if(!filename.size())
 		return; 
 	loadScene(filename);
+}
+
+void RayTracer::rayTracing(zyk::UCHAR3*buffer, int start_col, int end_col)
+{
+	if (!m_objects.size())
+		return;
+	for (int i = 0; i<(int)m_objects.size(); i++)
+		assert(m_objects[i] && m_objects[i]->getMaterial());
+
+	const zyk::Camera& v_cam = g_pGlobalSys->m_cam;
+	for (int i = start_col; i<end_col; i++)
+	{
+		int row_ind = i*v_cam.viewport_width;
+		for (int j = 0; j<v_cam.viewport_width; j++)
+		{
+			Vec4 shade_color;
+			if (m_render_type == RENDER_NORMAL)
+			{
+				shade_color = g_pGlobalSys->shadeSinglePxiel_Normal(m_objects, j, i);
+				zyk::clip_0_to_1(shade_color);
+				fillColor(shade_color, buffer[row_ind + j]);
+			}
+			else if (m_render_type == MC_PATH_TRACING)
+			{
+				shade_color = g_pGlobalSys->shadeSinglePixel_MC_Sampling(m_objects, j, i);
+				zyk::clip_0_to_1(shade_color);
+				fillColor_for_MC_Sampling(shade_color, buffer[row_ind + j]);
+			}
+		}
+		computed_col++;
+	}
 }
 
 void RayTracer::renderTest()
