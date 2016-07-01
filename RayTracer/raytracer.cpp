@@ -117,10 +117,9 @@ void RayTracer::setScene2()
 void RayTracer::updateThread()
 {
 	int thread_num = ui.thread_select->currentText().toInt();
-	/*if (thread_num == (int)m_thread_list.size()-1)
-		return;*/
 	m_thread_list.clear();
-	
+	computed_col = 0;
+
 	int stride = g_pGlobalSys->m_cam.viewport_height / thread_num;
 	int start_col=0,end_col=0;
 	
@@ -132,7 +131,6 @@ void RayTracer::updateThread()
 	}
 	//the last thread is responsible for the statistical work 
 	m_thread_list.push_back(std::thread(&RayTracer::statistical_work, this));
-	computed_col = 0;
 }
 
 void RayTracer::loadParaFromUI()
@@ -183,9 +181,10 @@ void RayTracer::renderScene()
 {
 	initRenderBuffer(render_buffer);
 	generateScene();
-	loadParaFromUI();	
+	loadParaFromUI();
 	updateThread();
-	
+	system("cls");
+
 #ifdef RECORD_TIME
 	DWORD start_time=GetTickCount();
 #endif

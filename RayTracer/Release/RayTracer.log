@@ -1,4 +1,4 @@
-﻿生成启动时间为 2016/6/30 20:47:08。
+﻿生成启动时间为 2016/7/1 11:23:21。
      1>项目“G:\My Documents\Visual Studio 2013\Projects\RayTracer\RayTracer\RayTracer\RayTracer.vcxproj”在节点 2 上(Build 个目标)。
      1>C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\V120\Microsoft.CppBuild.targets(935,5): warning MSB8027: Two or more files with the name of moc_raytracer.cpp will produce outputs to the same location. This can lead to an incorrect build result.  The files involved are GeneratedFiles\Debug\moc_raytracer.cpp, GeneratedFiles\Release\moc_raytracer.cpp.
      1>ClCompile:
@@ -28,4 +28,4 @@
 
 生成成功。
 
-已用时间 00:00:02.57
+已用时间 00:00:02.58
