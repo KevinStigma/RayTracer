@@ -9,7 +9,6 @@
 #include "zyk/Data_structure.h"
 #include "Calculagraph.h"
 
-//class's forward declaration in a namespace
 namespace zyk
 {
 	class Object;
@@ -42,11 +41,8 @@ protected:
 	void initRenderBuffer(zyk::UCHAR3*buffer);
 	void loadParaFromUI();
 	void updateThread();
-	void initObjects();
-	void outputTimeRecordInfo(int depth,const std::string& str);
 	void renderViewport(zyk::UCHAR3*buffer);
 	void rayTracing(zyk::UCHAR3*buffer, int start_col, int end_col);
-	void renderTest();
 	void statistical_work();
 	
 	Vec4 shadeSinglePixel_MC_Sampling(int x,int y);

@@ -20,7 +20,7 @@ Vec3 computeHalfVec(const zyk::Material* material, float r1, float r2)
 Vec4 Anistropy::render(const std::vector<zyk::Object*>&p_objects, const Intersection_Info& inter_info,
 	const Vec3& ray_dir, int depth, float input_rei)
 {
-	static float inv_rand_max = RAND_MAX;
+	static float inv_rand_max = 1.0f/RAND_MAX;
 	float r1 = rand()*inv_rand_max;
 	float r2 = rand()*inv_rand_max;
 

@@ -91,6 +91,8 @@ void RayTracer::setScene1()
 	ui.viewXEdit->setText("0");ui.viewYEdit->setText("0");ui.viewZEdit->setText("-1");
 	ui.upXEdit->setText("0");ui.upYEdit->setText("1");ui.upZEdit->setText("0");
 	ui.envREdit->setText("0");ui.envGEdit->setText("0");ui.envBEdit->setText("0");
+	ui.depthEdit->setText("7");
+	ui.sampleEdit->setText("1024");
 }
 
 void RayTracer::statistical_work()
@@ -111,7 +113,9 @@ void RayTracer::setScene2()
 	ui.posXEdit->setText("1.6");ui.posYEdit->setText("10");ui.posZEdit->setText("18");
 	ui.viewXEdit->setText("0");ui.viewYEdit->setText("-0.5");ui.viewZEdit->setText("-1");
 	ui.upXEdit->setText("0");ui.upYEdit->setText("1");ui.upZEdit->setText("0");
-	ui.envREdit->setText("0");ui.envGEdit->setText("0");ui.envBEdit->setText("0");
+	ui.envREdit->setText("0.01");ui.envGEdit->setText("0.01");ui.envBEdit->setText("0.01");
+	ui.depthEdit->setText("5");
+	ui.sampleEdit->setText("100");
 }
 
 void RayTracer::updateThread()
@@ -210,118 +214,6 @@ void RayTracer::initRenderBuffer(zyk::UCHAR3*buffer)
 		buffer[i].m[1]=0;
 		buffer[i].m[2]=0;
 	}
-}
-
-//#define SCENE1
-void RayTracer::initObjects()
-{
-#ifdef SCENE1
-	m_objects.resize(8);
-	std::vector<zyk::TriMesh*> meshes;
-	meshes.resize(6);
-
-	zyk::TriMesh* tri_mesh=new zyk::TriMesh("../data/scene/1/lightsource.obj");
-	tri_mesh->setMaterial(g_pGlobalSys->getMaterialByName("light_source"));
-	m_objects[0]=tri_mesh;
-	meshes[0]=tri_mesh;
-
-	tri_mesh=new zyk::TriMesh("../data/scene/1/wall1.obj");
-	tri_mesh->setNormal(1,0,0);
-	tri_mesh->setMaterial(g_pGlobalSys->getMaterialByName("red"));
-	m_objects[1]=tri_mesh;
-	meshes[1]=tri_mesh;
-
-	tri_mesh=new zyk::TriMesh("../data/scene/1/wall2.obj");
-	tri_mesh->setNormal(0,-1,0);
-	tri_mesh->setMaterial(g_pGlobalSys->getMaterialByName("gray"));
-	m_objects[2]=tri_mesh;
-	meshes[2]=tri_mesh;
-
-	tri_mesh=new zyk::TriMesh("../data/scene/1/wall3.obj");
-	tri_mesh->setNormal(0,0,1);
-	tri_mesh->setMaterial(g_pGlobalSys->getMaterialByName("gray"));
-	m_objects[3]=tri_mesh;
-	meshes[3]=tri_mesh;
-
-	tri_mesh=new zyk::TriMesh("../data/scene/1/wall5.obj");
-	tri_mesh->setNormal(0,1,0);
-	tri_mesh->setMaterial(g_pGlobalSys->getMaterialByName("gray"));
-	m_objects[4]=tri_mesh;
-	meshes[4]=tri_mesh;
-
-	tri_mesh=new zyk::TriMesh("../data/scene/1/wall4.obj");
-	tri_mesh->setNormal(-1,0,0);
-	tri_mesh->setMaterial(g_pGlobalSys->getMaterialByName("blue"));
-	m_objects[5]=tri_mesh;
-	meshes[5]=tri_mesh;
-
-	m_objects[6]=new zyk::Sphere(Vec3(-2.3852720f,-3.4f,10.43973f),1.6f);
-	m_objects[6]->setMaterial(g_pGlobalSys->getMaterialByName("mirrow"));
-
-	m_objects[7]=new zyk::Sphere(Vec3(2.24f,-3.4f,13.9258f),1.6f);
-	m_objects[7]->setMaterial(g_pGlobalSys->getMaterialByName("glass"));
-
-	Vec3 trans_vec(0.0f,-5.0f,12.0f);
-	for(int i=0;i<(int)meshes.size();i++)
-		meshes[i]->translate(trans_vec);
-
-	g_pGlobalSys->generateAreaLights(meshes[0]);
-#else
-	m_objects.resize(10);
-	std::vector<zyk::TriMesh*> meshes;
-	meshes.resize(6);
-
-	zyk::TriMesh* tri_mesh=new zyk::TriMesh("../data/scene/2/wall1.obj");
-	tri_mesh->setMaterial(g_pGlobalSys->getMaterialByName("gray2"));
-	m_objects[0]=tri_mesh;
-	meshes[0]=tri_mesh;
-
-	tri_mesh=new zyk::TriMesh("../data/scene/2/wall2.obj");
-	tri_mesh->setMaterial(g_pGlobalSys->getMaterialByName("gray2"));
-	m_objects[1]=tri_mesh;
-	meshes[1]=tri_mesh;
-
-	tri_mesh=new zyk::TriMesh("../data/scene/2/plate1.obj");
-	tri_mesh->setMaterial(g_pGlobalSys->getMaterialByName("mirrow"));
-	tri_mesh->normalizeNormals();
-	m_objects[2]=tri_mesh;
-	meshes[2]=tri_mesh;
-
-	tri_mesh=new zyk::TriMesh("../data/scene/2/plate2.obj");
-	tri_mesh->setMaterial(g_pGlobalSys->getMaterialByName("mirrow"));
-	tri_mesh->normalizeNormals();
-	m_objects[3]=tri_mesh;
-	meshes[3]=tri_mesh;
-
-	tri_mesh=new zyk::TriMesh("../data/scene/2/plate3.obj");
-	tri_mesh->setMaterial(g_pGlobalSys->getMaterialByName("mirrow"));
-	tri_mesh->normalizeNormals();
-	m_objects[4]=tri_mesh;
-	meshes[4]=tri_mesh;
-
-	tri_mesh=new zyk::TriMesh("../data/scene/2/plate4.obj");
-	tri_mesh->setMaterial(g_pGlobalSys->getMaterialByName("mirrow"));
-	tri_mesh->normalizeNormals();
-	m_objects[5]=tri_mesh;
-	meshes[5]=tri_mesh;
-
-	m_objects[6]=new zyk::Sphere(Vec3(7.10389,6.43046,3.03575),0.897079);
-	m_objects[6]->setMaterial(g_pGlobalSys->getMaterialByName("light_source"));
-
-	m_objects[7]=new zyk::Sphere(Vec3(3.6344,6.43045,3.03575),0.60687);
-	m_objects[7]->setMaterial(g_pGlobalSys->getMaterialByName("light_source"));
-
-	m_objects[8]=new zyk::Sphere(Vec3(-0.0104812,6.43046,3.03574),0.334434);
-	m_objects[8]->setMaterial(g_pGlobalSys->getMaterialByName("light_source"));
-
-	m_objects[9]=new zyk::Sphere(Vec3(-3.36951,6.43046,3.03575),0.114867);
-	m_objects[9]->setMaterial(g_pGlobalSys->getMaterialByName("light_source"));
-		
-	//Vec3 trans_vec(0.0f,-5.0f,-15.0f);//-5 -12
-	//for(int i=0;i<(int)meshes.size();i++)
-	//	meshes[i]->translate(trans_vec);
-
-#endif
 }
 
 inline Vec4 getBlack()
@@ -485,11 +377,6 @@ void RayTracer::rayTracing(zyk::UCHAR3*buffer, int start_col, int end_col)
 	}
 }
 
-void RayTracer::renderTest()
-{
-	//here we write some code to test effects of rendering
-}
-
 void RayTracer::savePic()const
 {
 	std::string filename;
@@ -506,11 +393,6 @@ void RayTracer::keyPressEvent(QKeyEvent *e)
 {
 	switch(e->key())
 	{
-	case Qt::Key_A:
-		{
-			renderTest();			
-			break;
-		}
 	case Qt::Key_S:
 		{
 			savePic();
