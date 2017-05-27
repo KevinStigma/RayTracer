@@ -1,5 +1,5 @@
 # RayTracer
-It's a raytracer I implement.It is in the stage of programming now. I have implemented the Monte Carlo Path Tracing for the project of course:
+It's a raytracer I implement.I have implemented the Monte Carlo Path Tracing for the project of course:
 Advanced Computer Graphics of Zhejiang University.  
 It is the scenes I rendered:  
 **Scene1, 10000 sampling**
